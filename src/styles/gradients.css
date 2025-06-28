@@ -1,0 +1,11 @@
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
+}
+
+.bg-gradient-accent {
+    background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+}
