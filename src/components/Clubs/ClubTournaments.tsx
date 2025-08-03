@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { tournamentsAPI, Tournament, TournamentsResponse } from '../../api/tournaments';
-import { Calendar, Clock, User, Trophy, Edit } from 'lucide-react';
+import { Calendar, Clock, User, Trophy, Edit, ExternalLink } from 'lucide-react';
 
 interface ClubTournamentsProps {
   clubId: number;
   onEditTournament?: (tournament: Tournament) => void;
   currentUser?: any;
+  club?: any;
 }
 
-export default function ClubTournaments({ clubId, onEditTournament, currentUser }: ClubTournamentsProps) {
+export default function ClubTournaments({ clubId, onEditTournament, currentUser, club }: ClubTournamentsProps) {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,10 +61,12 @@ export default function ClubTournaments({ clubId, onEditTournament, currentUser 
       switch (status.toUpperCase()) {
         case 'UPCOMING':
           return 'text-green-400 bg-green-400/10 border-green-400/20';
-        case 'ONGOING':
+        case 'ACTIVE':
           return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
         case 'COMPLETED':
           return 'text-red-400 bg-red-400/10 border-red-400/20';
+        case 'CANCELLED':
+          return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
         default:
           break;
       }
@@ -93,10 +97,12 @@ export default function ClubTournaments({ clubId, onEditTournament, currentUser 
       switch (status.toUpperCase()) {
         case 'UPCOMING':
           return 'Предстоящий';
-        case 'ONGOING':
-          return 'В процессе';
+        case 'ACTIVE':
+          return 'Активный';
         case 'COMPLETED':
           return 'Завершен';
+        case 'CANCELLED':
+          return 'Отменен';
         default:
           break;
       }
@@ -170,58 +176,74 @@ export default function ClubTournaments({ clubId, onEditTournament, currentUser 
       
       <div className="space-y-3">
         {Array.isArray(tournaments) && tournaments.map((tournament) => (
-          <div 
-            key={tournament.id} 
-            className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-4 hover:border-[#404040]/50 transition-colors"
-          >
-            <div className="flex items-start justify-between mb-3">
-              <h4 className="text-white font-medium text-base">{tournament.name}</h4>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(tournament.date, tournament.status)}`}>
-                  {getStatusText(tournament.date, tournament.status)}
-                </span>
-                {onEditTournament && currentUser && (
-                  (currentUser.role === 'admin' || 
-                   currentUser.role === 'club_owner' || 
-                   currentUser.role === 'club_admin') && (
-                    <button
-                      onClick={() => onEditTournament(tournament)}
-                      className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
-                      title="Редактировать турнир"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                  )
+          <div key={tournament.id} className="relative">
+            <Link
+              href={`/tournaments/${tournament.id}`}
+              className="block"
+            >
+              <div 
+                className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-4 hover:border-[#404040]/50 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-white font-medium text-base group-hover:text-blue-400 transition-colors">
+                      {tournament.name}
+                    </h4>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(tournament.date, tournament.status)}`}>
+                      {getStatusText(tournament.date, tournament.status)}
+                    </span>
+                  </div>
+                </div>
+                
+                {tournament.description && (
+                  <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                    {tournament.description}
+                  </p>
+                )}
+                
+                <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>Дата: {formatDate(tournament.date)}</span>
+                  </div>
+                </div>
+                
+                {tournament.referee && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                    <User className="w-3 h-3" />
+                    <span>Судья: {tournament.referee.nickname || tournament.referee.email}</span>
+                  </div>
+                )}
+                
+                {/* Show referee info from new API fields if available */}
+                {!tournament.referee && (tournament.refereeName || tournament.refereeEmail) && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                    <User className="w-3 h-3" />
+                    <span>Судья: {tournament.refereeName || tournament.refereeEmail}</span>
+                  </div>
                 )}
               </div>
-            </div>
+            </Link>
             
-            {tournament.description && (
-              <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-                {tournament.description}
-              </p>
-            )}
-            
-            <div className="flex items-center gap-4 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>Дата: {formatDate(tournament.date)}</span>
-              </div>
-            </div>
-            
-            {tournament.referee && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-                <User className="w-3 h-3" />
-                <span>Судья: {tournament.referee.nickname || tournament.referee.email}</span>
-              </div>
-            )}
-            
-            {/* Show referee info from new API fields if available */}
-            {!tournament.referee && (tournament.refereeName || tournament.refereeEmail) && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-                <User className="w-3 h-3" />
-                <span>Судья: {tournament.refereeName || tournament.refereeEmail}</span>
-              </div>
+            {/* Edit button positioned absolutely to avoid interfering with link */}
+            {onEditTournament && currentUser && club && (
+              // Только владелец клуба может редактировать турниры своего клуба
+              (currentUser.id === club.owner.id || currentUser.role === 'admin') && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onEditTournament(tournament);
+                  }}
+                  className="absolute top-4 right-4 p-1 text-gray-400 hover:text-blue-400 transition-colors bg-[#1D1D1D] rounded"
+                  title="Редактировать турнир"
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+              )
             )}
           </div>
         ))}

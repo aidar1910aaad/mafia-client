@@ -5,7 +5,7 @@ export interface Tournament {
     name: string;
     description: string;
     date: string;
-    clubId: number;
+    clubId?: number;
     refereeId: number;
     status?: string;
     createdAt?: string;
@@ -65,6 +65,17 @@ export interface UpdateTournamentRequest {
     date?: string;
     clubId?: number;
     refereeId?: number;
+}
+
+export interface TournamentsFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    clubId?: number;
+    refereeId?: number;
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 export const tournamentsAPI = {
@@ -182,5 +193,44 @@ export const tournamentsAPI = {
         } catch (error) {
             throw error;
         }
-    }
+    },
+
+    // Получение всех турниров с фильтрацией и пагинацией
+    async getAllTournaments(filters: TournamentsFilters = {}): Promise<TournamentsResponse> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page.toString());
+            if (filters.limit) params.append('limit', filters.limit.toString());
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.clubId) params.append('clubId', filters.clubId.toString());
+            if (filters.refereeId) params.append('refereeId', filters.refereeId.toString());
+            if (filters.sortBy) params.append('sortBy', filters.sortBy);
+            if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+            const response = await fetch(`${API_URL}/tournaments?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения турниров: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
 }; 

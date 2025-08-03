@@ -10,6 +10,43 @@ export interface User {
     updatedAt: string;
 }
 
+export interface Player {
+    id: number;
+    email: string;
+    nickname: string;
+    avatar: string;
+    role: string;
+    confirmed: boolean;
+    clubName?: string;
+    totalGames: number;
+    totalWins: number;
+    totalPoints: number;
+    totalKills: number;
+    totalDeaths: number;
+    mafiaGames: number;
+    mafiaWins: number;
+    citizenGames: number;
+    citizenWins: number;
+    createdAt: string;
+}
+
+export interface PlayersResponse {
+    players: Player[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+export interface PlayersFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    sortBy?: string;
+    sortOrder?: string;
+}
+
 export interface UserSearchResult {
     id: number;
     email: string;
@@ -19,6 +56,43 @@ export interface UserSearchResult {
 }
 
 export const usersAPI = {
+    // Получение всех игроков с фильтрацией и пагинацией
+    async getAllPlayers(filters: PlayersFilters = {}): Promise<PlayersResponse> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page.toString());
+            if (filters.limit) params.append('limit', filters.limit.toString());
+            if (filters.search) params.append('search', filters.search);
+            if (filters.role) params.append('role', filters.role);
+            if (filters.sortBy) params.append('sortBy', filters.sortBy);
+            if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+            const response = await fetch(`${API_URL}/users?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения игроков: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
+
     // Получение всех пользователей
     async getAllUsers(): Promise<User[]> {
         try {
@@ -41,7 +115,19 @@ export const usersAPI = {
                 throw new Error(errorData.message || `Ошибка получения пользователей: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            
+            // Проверяем, является ли ответ массивом или объектом с полем players
+            if (Array.isArray(data)) {
+                return data;
+            } else if (data && Array.isArray(data.players)) {
+                return data.players;
+            } else if (data && Array.isArray(data.users)) {
+                return data.users;
+            } else {
+                console.error('Неожиданный формат ответа API:', data);
+                return [];
+            }
         } catch (error) {
             throw error;
         }
@@ -81,7 +167,7 @@ export const usersAPI = {
     },
 
     // Получение пользователя по ID
-    async getUserById(id: number): Promise<User> {
+    async getUserById(id: number): Promise<Player> {
         try {
             const token = localStorage.getItem('authToken');
             
@@ -100,6 +186,34 @@ export const usersAPI = {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `Ошибка получения пользователя: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Получение игрока по ID с полной статистикой
+    async getPlayerById(id: number): Promise<Player> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            const response = await fetch(`${API_URL}/users/${id}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения игрока: ${response.status}`);
             }
 
             return await response.json();

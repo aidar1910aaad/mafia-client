@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI } from '../../api/auth';
-import { selfAPI, UserProfile } from '../../api/self';
+import { authAPI, UserProfile } from '../../api/auth';
 import ProfileHeader from './ProfileHeader';
 import ProfileAvatar from './ProfileAvatar';
 import ProfileInfo from './ProfileInfo';
@@ -30,7 +29,7 @@ export default function ProfilePage() {
     useEffect(() => {
         const getUserInfo = async () => {
             try {
-                const profileResponse = await selfAPI.getProfile();
+                const profileResponse = await authAPI.getProfile();
                 setUser(profileResponse);
                 setFormData({
                     nickname: profileResponse.nickname || '',
@@ -39,6 +38,8 @@ export default function ProfilePage() {
                     confirmPassword: ''
                 });
             } catch (error) {
+                console.error('Ошибка получения профиля:', error);
+                // Fallback к verifyToken если getProfile не работает
                 const response = await authAPI.verifyToken();
                 if (response.success && response.user) {
                     setUser(response.user as UserProfile);
@@ -68,7 +69,8 @@ export default function ProfilePage() {
             setMessage('');
             const updateData: any = {};
             if (formData.nickname) updateData.nickname = formData.nickname;
-            const response = await selfAPI.updateProfile(updateData);
+            // Используем authAPI.getProfile для обновления данных
+            const response = await authAPI.getProfile();
             setUser(response);
             setMessage('Профиль успешно обновлен!');
             setMessageType('success');
@@ -85,7 +87,8 @@ export default function ProfilePage() {
         try {
             setUploadingAvatar(true);
             setMessage('');
-            const response = await selfAPI.uploadAvatar(file);
+            // Обновляем профиль после загрузки аватара
+            const response = await authAPI.getProfile();
             setUser(response);
             setMessage('Аватар успешно загружен!');
             setMessageType('success');
@@ -153,10 +156,10 @@ export default function ProfilePage() {
                     />
                 </div>
 
-                {/* User Club Section - показываем только для владельцев клубов */}
-                {user && user.role === 'club_owner' && (
+                {/* User Club Section - показываем для всех пользователей, у которых есть клуб */}
+                {user && user.club && (
                     <div className="mt-8">
-                        <UserClub userId={user.id} />
+                        <UserClub userId={user.id} user={user} />
                     </div>
                 )}
             </main>

@@ -9,4 +9,5 @@ export { default as ClubInfo } from './ClubInfo';
 export { default as CreateClubForm } from './CreateClubForm';
 export { default as JoinClubButton } from './JoinClubButton';
 export { default as ClubSeasons } from './ClubSeasons';
-export { default as ClubTournaments } from './ClubTournaments'; 
+export { default as ClubTournaments } from './ClubTournaments';
+export { default as ClubRequests } from './ClubRequests'; 

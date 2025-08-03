@@ -18,7 +18,8 @@ import {
   ClubInfo,
   JoinClubButton,
   ClubSeasons,
-  ClubTournaments
+  ClubTournaments,
+  ClubRequests
 } from '../../../components/Clubs';
 import Toast from '../../../components/Toast/Toast';
 import DatePicker from '../../../components/UI/DatePicker';
@@ -392,8 +393,18 @@ export default function ClubPage() {
             <ClubDescription club={club} />
             <ClubStatistics club={club} />
             <ClubSocialMedia club={club} />
+            
+            {/* Заявки на вступление - только для владельцев и администраторов */}
+            {currentUser && club.status === 'APPROVED' && (
+              (club.owner.id === currentUser.id || 
+               club.administrators.some((admin: any) => admin.id === currentUser.id) ||
+               currentUser.role === 'admin') && (
+                <ClubRequests clubId={club.id} />
+              )
+            )}
+            
             <ClubSeasons clubId={club.id} />
-            <ClubTournaments clubId={club.id} onEditTournament={handleEditTournament} currentUser={currentUser} />
+            <ClubTournaments clubId={club.id} onEditTournament={handleEditTournament} currentUser={currentUser} club={club} />
           </div>
 
           {/* Sidebar */}

@@ -27,6 +27,37 @@ export interface AuthResponse {
     };
 }
 
+export interface UserProfile {
+    id: number;
+    email: string;
+    nickname: string;
+    avatar: string;
+    role: string;
+    confirmed: boolean;
+    club?: {
+        id: number;
+        name: string;
+        logo: string | null;
+        description: string;
+        city: string;
+        status: string;
+        userRole: string;
+        joinedAt: string;
+        socialMediaLink: string;
+    };
+    totalGames: number;
+    totalWins: number;
+    totalPoints: number;
+    totalKills: number;
+    totalDeaths: number;
+    mafiaGames: number;
+    mafiaWins: number;
+    citizenGames: number;
+    citizenWins: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export const authAPI = {
     // Вход в аккаунт
     async login(data: LoginData): Promise<AuthResponse> {
@@ -250,6 +281,34 @@ export const authAPI = {
                 success: false,
                 message: 'Ошибка проверки токена'
             };
+        }
+    },
+
+    // Получение профиля пользователя
+    async getProfile(): Promise<UserProfile> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            const response = await fetch(`${API_URL}/self/profile`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения профиля: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
         }
     }
 }; 

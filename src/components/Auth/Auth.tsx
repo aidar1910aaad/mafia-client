@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, LoginData, SignupData } from '../../api/auth';
+import { User, Lock, Mail, LogIn, UserPlus, CheckCircle, LogOut } from 'lucide-react';
 
 export default function Auth() {
     const [isLogin, setIsLogin] = useState(true);
@@ -76,16 +77,23 @@ export default function Auth() {
     };
 
     return (
-        <div className="min-h-screen bg-[#161616] flex items-center justify-center px-4">
-            <div className="w-full max-w-sm mx-auto">
+        <div className="min-h-screen bg-[#161616] flex items-center justify-center px-4 py-8">
+            <div className="w-full max-w-md mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-gradient-to-r from-[#8469EF] to-[#6B4FFF] rounded-full flex items-center justify-center mx-auto mb-4">
+                        {isAuthenticated ? (
+                            <CheckCircle className="w-8 h-8 text-white" />
+                        ) : (
+                            <User className="w-8 h-8 text-white" />
+                        )}
+                    </div>
                     <h1 className="text-white text-3xl font-bold mb-2">
-                        {isAuthenticated ? 'Вы уже авторизованы' : (isLogin ? 'Вход' : 'Регистрация')}
+                        {isAuthenticated ? 'Добро пожаловать!' : (isLogin ? 'Вход в систему' : 'Регистрация')}
                     </h1>
-                    <p className="text-gray-400">
+                    <p className="text-[#C7C7C7]">
                         {isAuthenticated 
-                            ? `Добро пожаловать, ${user?.nickname}!`
+                            ? `Привет, ${user?.nickname}!`
                             : (isLogin ? 'Войдите в свой аккаунт' : 'Создайте новый аккаунт')
                         }
                     </p>
@@ -93,61 +101,63 @@ export default function Auth() {
 
                 {/* Show different content for authenticated users */}
                 {isAuthenticated ? (
-                    <div className="bg-gray-800 rounded-lg p-8 shadow-lg w-full">
+                    <div className="bg-[#1D1D1D] border border-[#353535] rounded-[18px] p-8 shadow-xl">
                         <div className="text-center space-y-6">
-                            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto">
-                                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
+                            <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                                <CheckCircle className="w-10 h-10 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-white text-xl font-bold mb-2">Вы успешно авторизованы!</h2>
-                                <p className="text-gray-400 text-sm">
+                                <p className="text-[#C7C7C7] text-sm">
                                     {user?.role === 'admin' ? 'Перейдите в админ панель' : 'Перейдите в панель управления'}
                                 </p>
                             </div>
-                            <button
-                                onClick={() => {
-                                    if (user?.role === 'admin') {
-                                        router.push('/admin');
-                                    } else {
-                                        router.push('/dashboard');
-                                    }
-                                }}
-                                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 px-4 rounded-md transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                            >
-                                {user?.role === 'admin' ? 'Перейти в админ панель' : 'Перейти в панель управления'}
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        await authAPI.logout();
-                                        setIsAuthenticated(false);
-                                        setUser(null);
-                                    } catch (error) {
-                                        console.error('Error logging out:', error);
-                                    }
-                                }}
-                                className="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium py-3 px-4 rounded-md transition-colors"
-                            >
-                                Выйти
-                            </button>
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => {
+                                        if (user?.role === 'admin') {
+                                            router.push('/admin');
+                                        } else {
+                                            router.push('/dashboard');
+                                        }
+                                    }}
+                                    className="w-full bg-gradient-to-r from-[#8469EF] to-[#6B4FFF] hover:from-[#6B4FFF] hover:to-[#5A3FE8] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                >
+                                    {user?.role === 'admin' ? 'Перейти в админ панель' : 'Перейти в панель управления'}
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await authAPI.logout();
+                                            setIsAuthenticated(false);
+                                            setUser(null);
+                                        } catch (error) {
+                                            console.error('Error logging out:', error);
+                                        }
+                                    }}
+                                    className="w-full bg-[#2A2A2A] hover:bg-[#353535] border border-[#404040] text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                    Выйти
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ) : (
                     /* Form */
-                    <div className="bg-gray-800 rounded-lg p-8 shadow-lg w-full">
+                    <div className="bg-[#1D1D1D] border border-[#353535] rounded-[18px] p-8 shadow-xl">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {!isLogin && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    <label className="block text-sm font-medium text-[#C7C7C7] mb-2 flex items-center gap-2">
+                                        <User className="w-4 h-4 text-[#8469EF]" />
                                         Никнейм
                                     </label>
                                     <input
                                         type="text"
                                         value={nickname}
                                         onChange={(e) => setNickname(e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full px-4 py-3 bg-[#2A2A2A] border border-[#404040] rounded-lg text-white placeholder-[#808080] focus:outline-none focus:border-[#8469EF] focus:ring-1 focus:ring-[#8469EF] transition-colors"
                                         placeholder="Введите никнейм"
                                         required={!isLogin}
                                     />
@@ -155,35 +165,37 @@ export default function Auth() {
                             )}
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-[#C7C7C7] mb-2 flex items-center gap-2">
+                                    <Mail className="w-4 h-4 text-[#8469EF]" />
                                     Email
                                 </label>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-[#2A2A2A] border border-[#404040] rounded-lg text-white placeholder-[#808080] focus:outline-none focus:border-[#8469EF] focus:ring-1 focus:ring-[#8469EF] transition-colors"
                                     placeholder="Введите email"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                <label className="block text-sm font-medium text-[#C7C7C7] mb-2 flex items-center gap-2">
+                                    <Lock className="w-4 h-4 text-[#8469EF]" />
                                     Пароль
                                 </label>
                                 <input
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    className="w-full px-4 py-3 bg-[#2A2A2A] border border-[#404040] rounded-lg text-white placeholder-[#808080] focus:outline-none focus:border-[#8469EF] focus:ring-1 focus:ring-[#8469EF] transition-colors"
                                     placeholder="Введите пароль"
                                     required
                                 />
                             </div>
 
                             {error && (
-                                <div className="bg-red-900/50 border border-red-700 rounded-md px-4 py-3">
+                                <div className="bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-3">
                                     <p className="text-red-400 text-sm">{error}</p>
                                 </div>
                             )}
@@ -191,25 +203,35 @@ export default function Auth() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium py-3 px-4 rounded-md transition-colors disabled:cursor-not-allowed"
+                                className="w-full bg-gradient-to-r from-[#8469EF] to-[#6B4FFF] hover:from-[#6B4FFF] hover:to-[#5A3FE8] disabled:from-[#404040] disabled:to-[#404040] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none flex items-center justify-center gap-2"
                             >
-                                {loading ? 'Загрузка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}
+                                {loading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Загрузка...
+                                    </>
+                                ) : (
+                                    <>
+                                        {isLogin ? <LogIn className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                                        {isLogin ? 'Войти' : 'Зарегистрироваться'}
+                                    </>
+                                )}
                             </button>
                         </form>
 
                         {/* Divider */}
                         <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-600"></div>
+                                <div className="w-full border-t border-[#404040]"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-gray-800 text-gray-400">или</span>
+                                <span className="px-3 bg-[#1D1D1D] text-[#808080]">или</span>
                             </div>
                         </div>
 
                         {/* Switch mode */}
                         <div className="text-center">
-                            <p className="text-gray-400 text-sm">
+                            <p className="text-[#C7C7C7] text-sm">
                                 {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
                                 <button
                                     onClick={() => {
@@ -219,7 +241,7 @@ export default function Auth() {
                                         setPassword('');
                                         setNickname('');
                                     }}
-                                    className="text-blue-400 hover:text-blue-300 ml-1 font-medium"
+                                    className="text-[#8469EF] hover:text-[#6B4FFF] ml-1 font-medium transition-colors"
                                 >
                                     {isLogin ? 'Зарегистрироваться' : 'Войти'}
                                 </button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { UserProfile } from '../../api/self';
+import { UserProfile } from '../../api/auth';
 import { API_URL } from '../../api/API_URL';
 
 interface ProfileAvatarProps {

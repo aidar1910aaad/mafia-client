@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { seasonsAPI, Season } from '../../api/seasons';
-import { Calendar, Clock, User, Trophy } from 'lucide-react';
+import { Calendar, Clock, User, Trophy, ExternalLink } from 'lucide-react';
 
 interface ClubSeasonsProps {
   clubId: number;
@@ -18,7 +19,8 @@ export default function ClubSeasons({ clubId }: ClubSeasonsProps) {
       try {
         setLoading(true);
         const seasonsData = await seasonsAPI.getClubSeasons(clubId);
-        setSeasons(seasonsData);
+        const seasonsArray = Array.isArray(seasonsData) ? seasonsData : (seasonsData?.seasons || []);
+        setSeasons(seasonsArray);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки сезонов');
       } finally {
@@ -116,41 +118,51 @@ export default function ClubSeasons({ clubId }: ClubSeasonsProps) {
       
       <div className="space-y-3">
         {seasons.map((season) => (
-          <div 
-            key={season.id} 
-            className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-4 hover:border-[#404040]/50 transition-colors"
+          <Link
+            key={season.id}
+            href={`/seasons/${season.id}`}
+            className="block"
           >
-            <div className="flex items-start justify-between mb-3">
-              <h4 className="text-white font-medium text-base">{season.name}</h4>
-              <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(season.status)}`}>
-                {getStatusText(season.status)}
-              </span>
+            <div 
+              className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-4 hover:border-[#404040]/50 transition-colors cursor-pointer group"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-white font-medium text-base group-hover:text-blue-400 transition-colors">
+                    {season.name}
+                  </h4>
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                </div>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(season.status)}`}>
+                  {getStatusText(season.status)}
+                </span>
+              </div>
+              
+              {season.description && (
+                <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                  {season.description}
+                </p>
+              )}
+              
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3" />
+                  <span>Начало: {formatDate(season.startDate)}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>Окончание: {formatDate(season.endDate)}</span>
+                </div>
+              </div>
+              
+              {season.referee && (
+                <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
+                  <User className="w-3 h-3" />
+                  <span>Судья: {season.referee.nickname || season.referee.email}</span>
+                </div>
+              )}
             </div>
-            
-            {season.description && (
-              <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-                {season.description}
-              </p>
-            )}
-            
-            <div className="flex items-center gap-4 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
-                <span>Начало: {formatDate(season.startDate)}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>Окончание: {formatDate(season.endDate)}</span>
-              </div>
-            </div>
-            
-            {season.referee && (
-              <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-                <User className="w-3 h-3" />
-                <span>Судья: {season.referee.nickname || season.referee.email}</span>
-              </div>
-            )}
-          </div>
+          </Link>
         ))}
       </div>
     </div>

@@ -6,7 +6,7 @@ export interface Season {
     description: string;
     startDate: string;
     endDate: string;
-    clubId: number;
+    clubId?: number;
     refereeId: number;
     status: 'ACTIVE' | 'INACTIVE' | 'COMPLETED' | 'UPCOMING';
     createdAt: string;
@@ -21,6 +21,13 @@ export interface Season {
         status: string;
         createdAt: string;
         updatedAt: string;
+        owner?: {
+            id: number;
+            email: string;
+            nickname: string;
+            avatar: string;
+            role: string;
+        };
     };
     referee?: {
         id: number;
@@ -30,6 +37,27 @@ export interface Season {
         role: string;
     };
     games?: any[];
+}
+
+export interface SeasonsResponse {
+    seasons: Season[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+export interface SeasonsFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    clubId?: number;
+    refereeId?: number;
+    sortBy?: string;
+    sortOrder?: string;
 }
 
 export interface CreateSeasonRequest {
@@ -50,6 +78,45 @@ export interface Referee {
 }
 
 export const seasonsAPI = {
+    // Получение всех сезонов с фильтрацией и пагинацией
+    async getAllSeasons(filters: SeasonsFilters = {}): Promise<SeasonsResponse> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page.toString());
+            if (filters.limit) params.append('limit', filters.limit.toString());
+            if (filters.search) params.append('search', filters.search);
+            if (filters.status) params.append('status', filters.status);
+            if (filters.clubId) params.append('clubId', filters.clubId.toString());
+            if (filters.refereeId) params.append('refereeId', filters.refereeId.toString());
+            if (filters.sortBy) params.append('sortBy', filters.sortBy);
+            if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+            const response = await fetch(`${API_URL}/seasons?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения сезонов: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
+
     // Создание нового сезона
     async createSeason(data: CreateSeasonRequest): Promise<Season> {
         try {
@@ -102,7 +169,9 @@ export const seasonsAPI = {
                 throw new Error(errorData.message || `Ошибка получения сезонов: ${response.status}`);
             }
 
-            return await response.json();
+            const data = await response.json();
+            // Возвращаем массив сезонов из ответа API
+            return data.seasons || data || [];
         } catch (error) {
             throw error;
         }
