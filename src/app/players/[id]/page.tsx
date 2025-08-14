@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { 
   User, 
@@ -21,6 +20,7 @@ import {
   Activity
 } from 'lucide-react';
 import { usersAPI, Player } from '../../../api/users';
+import Avatar from '../../../components/UI/Avatar';
 
 export default function PlayerProfilePage() {
   const params = useParams();
@@ -142,21 +142,12 @@ export default function PlayerProfilePage() {
           <div className="flex flex-col md:flex-row gap-6">
             {/* Avatar and Basic Info */}
             <div className="flex flex-col items-center md:items-start gap-4">
-              {player.avatar && player.avatar !== 'default-avatar.png' ? (
-                <Image 
-                  src={`${process.env.NEXT_PUBLIC_API_URL || 'https://mafia-production-0fd1.up.railway.app'}/uploads/${player.avatar}`}
-                  alt="Player avatar" 
-                  width={120} 
-                  height={120} 
-                  className="rounded-[12px] object-cover" 
-                />
-              ) : (
-                <div className="w-30 h-30 bg-gradient-to-r from-blue-600 to-blue-700 rounded-[12px] flex items-center justify-center">
-                  <span className="text-white font-bold text-4xl">
-                    {player.nickname.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              <Avatar 
+                avatar={player.avatar}
+                size="xl"
+                fallback={player.nickname}
+                className="w-30 h-30 rounded-[12px]"
+              />
               
               <div className="text-center md:text-left">
                 <h1 className="text-3xl font-bold text-[#8469EF] mb-2">{player.nickname}</h1>

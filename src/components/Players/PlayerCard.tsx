@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { User, Trophy, Target, Shield, Calendar, Crown } from 'lucide-react';
 import { Player } from '../../api/users';
+import Avatar from '../UI/Avatar';
 
 interface PlayerCardProps {
   player: Player;
@@ -60,21 +60,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
         )}
         
         {/* Avatar */}
-        {player.avatar && player.avatar !== 'default-avatar.png' ? (
-          <Image 
-            src={`${process.env.NEXT_PUBLIC_API_URL || 'https://mafia-production-0fd1.up.railway.app'}/uploads/${player.avatar}`}
-            alt="Player avatar" 
-            width={40} 
-            height={40} 
-            className="rounded-[6px] object-cover" 
-          />
-        ) : (
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-[6px] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">
-              {player.nickname.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
+        <Avatar 
+          avatar={player.avatar}
+          size="md"
+          fallback={player.nickname}
+          className="w-10 h-10 rounded-[6px]"
+        />
 
         {/* Player Info */}
         <div className="flex-1">

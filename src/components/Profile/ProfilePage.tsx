@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, UserProfile } from '../../api/auth';
 import MessageDisplay from './MessageDisplay';
+import Avatar from '../UI/Avatar';
 
 export default function ProfilePage() {
     const [user, setUser] = useState<UserProfile | null>(null);
@@ -30,6 +31,25 @@ export default function ProfilePage() {
         getUserInfo();
     }, []);
 
+    const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setMessage('');
+            const updatedUser = await authAPI.uploadAvatar(file);
+            setUser(updatedUser);
+            setMessage('Аватар успешно загружен!');
+            setMessageType('success');
+        } catch (error) {
+            setMessage(error instanceof Error ? error.message : 'Ошибка при загрузке аватара');
+            setMessageType('error');
+        }
+        
+        // Очищаем input
+        event.target.value = '';
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-[#1D1D1D] via-[#2A2A2A] to-[#1D1D1D] flex items-center justify-center">
@@ -53,23 +73,35 @@ export default function ProfilePage() {
                         <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-2xl p-6">
                             <div className="text-center">
                                 {/* Аватар */}
-                                <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-[#404040]/50 bg-[#404040] flex items-center justify-center">
-                                    {user?.avatar ? (
-                                        <img 
-                                            src={user.avatar} 
-                                            alt="Avatar"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = 'none';
-                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                            }}
+                                <div className="relative w-24 h-24 mx-auto mb-4">
+                                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-[#404040]/50 bg-[#404040] flex items-center justify-center">
+                                        <Avatar 
+                                            avatar={user?.avatar}
+                                            size="xl"
+                                            fallback={user?.nickname || 'U'}
+                                            className="w-full h-full"
                                         />
-                                    ) : null}
-                                    <div className={`w-full h-full flex items-center justify-center ${user?.avatar ? 'hidden' : ''}`}>
-                                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                                        </svg>
                                     </div>
+                                    
+                                    {/* Кнопка загрузки аватара */}
+                                    <button
+                                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#8469EF] hover:bg-[#6B4FFF] rounded-full flex items-center justify-center transition-colors"
+                                        title="Загрузить аватар"
+                                    >
+                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    
+                                    {/* Скрытый input для загрузки файла */}
+                                    <input
+                                        id="avatar-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleAvatarUpload}
+                                    />
                                 </div>
                                 
                                 {/* Имя пользователя */}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { adminAPI, User } from '../../../api/admin';
 import { RefreshCw, Eye, Edit, Trash2 } from 'lucide-react';
+import Avatar from '../../UI/Avatar';
 
 interface UsersTabProps {
   message: { text: string; type: 'success' | 'error' } | null;
@@ -18,6 +19,7 @@ export default function UsersTab({ message }: UsersTabProps) {
       const usersData = await adminAPI.getUsers();
       setUsers(usersData);
     } catch (error) {
+      console.error('UsersTab - error fetching users:', error);
       // Error fetching users
     } finally {
       setUsersLoading(false);
@@ -70,23 +72,18 @@ export default function UsersTab({ message }: UsersTabProps) {
                 </tr>
               </thead>
               <tbody>
-                {users.length > 0 ? (
-                  users.map((user) => (
-                    <tr key={user.id} className="border-b border-[#404040]/30 hover:bg-[#1D1D1D]/30 transition-colors">
+                                 {users.length > 0 ? (
+                   users.map((user) => (
+                       <tr key={user.id} className="border-b border-[#404040]/30 hover:bg-[#1D1D1D]/30 transition-colors">
                       <td className="p-3 text-[#A1A1A1] font-mono text-xs">#{user.id}</td>
-                      <td className="p-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
-                          {user.avatar && user.avatar !== 'default-avatar.png' ? (
-                            <img 
-                              src={`${process.env.NEXT_PUBLIC_API_URL || 'https://mafia-production-0fd1.up.railway.app'}/uploads/${user.avatar}`} 
-                              alt={user.nickname}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            user.nickname.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                      </td>
+                                             <td className="p-3">
+                         <Avatar 
+                           avatar={user.avatar}
+                           size="sm"
+                           fallback={user.nickname}
+                           className="w-8 h-8"
+                         />
+                       </td>
                       <td className="p-3 text-white font-medium text-sm">{user.nickname}</td>
                       <td className="p-3 text-[#A1A1A1] text-xs truncate max-w-[120px]">{user.email}</td>
                       <td className="p-3">

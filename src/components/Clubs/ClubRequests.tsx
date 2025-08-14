@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { clubsAPI, JoinRequest } from '../../api/clubs';
 import { UserCheck, UserX, Clock, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
-import { API_URL } from '../../api/API_URL';
+import Avatar from '../UI/Avatar';
 
 interface ClubRequestsProps {
   clubId: number;
@@ -76,17 +76,7 @@ export default function ClubRequests({ clubId }: ClubRequestsProps) {
     });
   };
 
-  const getAvatarUrl = (avatar: string) => {
-    if (!avatar || avatar === 'default-avatar.png') {
-      return null;
-    }
-    
-    if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-      return avatar;
-    }
-    
-    return `${API_URL}/${avatar}`;
-  };
+
 
   if (loading) {
     return (
@@ -142,20 +132,12 @@ export default function ClubRequests({ clubId }: ClubRequestsProps) {
               <div className="flex items-start gap-4">
                 {/* Аватар пользователя */}
                 <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
-                    {request.user.avatar && getAvatarUrl(request.user.avatar) ? (
-                      <img
-                        src={getAvatarUrl(request.user.avatar)!}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      (request.user.name || request.user.nickname)?.charAt(0)?.toUpperCase() || 'U'
-                    )}
-                  </div>
+                  <Avatar 
+                    avatar={request.user.avatar}
+                    size="md"
+                    fallback={request.user.name || request.user.nickname || 'U'}
+                    className="w-12 h-12"
+                  />
                 </div>
 
                 {/* Информация о пользователе */}

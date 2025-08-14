@@ -5,6 +5,7 @@ import { gamesAPI, Game } from '../../api/games';
 import { usersAPI } from '../../api/users';
 import { Calendar, Users, Trophy, Target, Shield, User, Clock, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import Avatar from '../UI/Avatar';
 
 interface GameDetailsProps {
   gameId: number;
@@ -225,13 +226,12 @@ export default function GameDetails({ gameId }: GameDetailsProps) {
                 <div key={player.playerId} className="bg-[#2A2A2A] border border-[#404040]/30 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {user?.avatar ? (
-                          <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
-                        ) : (
-                          (user?.name || user?.nickname)?.charAt(0)?.toUpperCase() || 'U'
-                        )}
-                      </div>
+                      <Avatar 
+                        avatar={user?.avatar}
+                        size="md"
+                        fallback={user?.name || user?.nickname || 'U'}
+                        className="w-12 h-12"
+                      />
                       <div>
                         <h3 className="text-white font-medium">
                           {user?.name || user?.nickname || user?.email || `Игрок ${player.playerId}`}

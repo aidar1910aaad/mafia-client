@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { UserProfile } from '../../api/auth';
-import { API_URL } from '../../api/API_URL';
+import Avatar from '../UI/Avatar';
 
 interface ProfileAvatarProps {
     user: UserProfile | null;
@@ -19,38 +19,16 @@ export default function ProfileAvatar({
 }: ProfileAvatarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Function to get proper avatar URL
-    const getAvatarUrl = (avatar: string) => {
-        if (!avatar || avatar === 'default-avatar.png') {
-            return null;
-        }
-        
-        // If it's already a full URL, return as is
-        if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-            return avatar;
-        }
-        
-        // If it's a relative path, construct the full URL
-        return `${API_URL}/${avatar}`;
-    };
+
 
     return (
         <div className="relative">
-            <div className="w-24 h-24 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg overflow-hidden">
-                {user?.avatar && getAvatarUrl(user.avatar) ? (
-                    <img
-                        src={getAvatarUrl(user.avatar)!}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                            // Hide the image if it fails to load
-                            e.currentTarget.style.display = 'none';
-                        }}
-                    />
-                ) : (
-                    user?.nickname?.charAt(0)?.toUpperCase() || 'U'
-                )}
-            </div>
+            <Avatar 
+                avatar={user?.avatar}
+                size="xl"
+                fallback={user?.nickname || 'U'}
+                className="w-24 h-24"
+            />
             {editing && (
                 <button 
                     onClick={() => fileInputRef.current?.click()}

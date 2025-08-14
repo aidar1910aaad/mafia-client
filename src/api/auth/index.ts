@@ -310,5 +310,36 @@ export const authAPI = {
         } catch (error) {
             throw error;
         }
+    },
+
+    // Загрузка аватара пользователя
+    async uploadAvatar(file: File): Promise<UserProfile> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const response = await fetch(`${API_URL}/self/avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка загрузки аватара: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
     }
 }; 
