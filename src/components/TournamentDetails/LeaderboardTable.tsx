@@ -1,41 +1,167 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Tournament } from '../../api/tournaments';
 
-const LeaderboardTable = () => {
-  const tableData = [
-    ["Керамбит", "24,5", "9,5", "", "", "2/2", "1/1", "1/1", "1/1", "", "1/1", "0/1", "", "5/6", "5/6"],
-    ["Diablo", "22,5", "7,5", "", "", "1/1", "1/1", "1/1", "1/2", "", "", "", "", "5/6", "5/6"],
-    ["BWDMoscow", "19", "4,5", "1", "1,5", "3", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Флай", "17,25", "4,5", "", "0,75", "2", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Ганнибал", "15,25", "3", "", "0,25", "1", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Директор", "14,75", "1,5", "", "1", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Рони", "14,5", "2,5", "", "", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Майкрофт", "11,75", "2,5", "1", "0,5", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Зажигалочка", "11,25", "2", "", "", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Баконяко", "10,75", "1", "", "0,75", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Drummer", "8,75", "2,5", "", "", "", "", "", "", "", "", "", "", "5/6", "5/6"],
-    ["Жена Миллиардера", "8,75", "2", "", "", "", "", "", "", "", "", "", "", "5/6", "5/6"]
-  ];
+interface LeaderboardTableProps {
+  tournament?: Tournament;
+}
+
+interface PlayerStats {
+  playerId: number;
+  nickname: string;
+  totalPoints: number;
+  totalBonusPoints: number;
+  totalPenaltyPoints: number;
+  gamesPlayed: number;
+  roleStats: {
+    [role: string]: { played: number; won: number };
+  };
+}
+
+const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
+  // Если турнир не загружен, показываем загрузку
+  if (!tournament) {
+    return (
+      <div className="overflow-auto rounded-lg border border-gray-800 bg-[#111111]">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-400">Загрузка турнирной таблицы...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Вычисляем статистику игроков из реальных данных турнира
+  const playersStats = useMemo(() => {
+    if (!tournament.games) return [];
+
+    const statsMap = new Map<number, PlayerStats>();
+
+    // Проходим по всем играм турнира
+    tournament.games.forEach(game => {
+      if (!game.players) return;
+
+      game.players.forEach(player => {
+        const playerId = player.player?.id;
+        const nickname = player.player?.nickname;
+        
+        if (!playerId || !nickname) return;
+
+        // Получаем или создаем статистику игрока
+        if (!statsMap.has(playerId)) {
+          statsMap.set(playerId, {
+            playerId,
+            nickname,
+            totalPoints: 0,
+            totalBonusPoints: 0,
+            totalPenaltyPoints: 0,
+            gamesPlayed: 0,
+            roleStats: {}
+          });
+        }
+
+        const playerStats = statsMap.get(playerId)!;
+        
+        // Обновляем статистику
+        playerStats.totalPoints += player.points || 0;
+        playerStats.totalBonusPoints += player.bonusPoints || 0;
+        playerStats.totalPenaltyPoints += player.penaltyPoints || 0;
+        playerStats.gamesPlayed += 1;
+
+        // Обновляем статистику по ролям
+        const role = player.role || 'CITIZEN';
+        if (!playerStats.roleStats[role]) {
+          playerStats.roleStats[role] = { played: 0, won: 0 };
+        }
+        playerStats.roleStats[role].played += 1;
+
+        // Определяем победу по сумме очков игрока
+        // Если общая сумма очков (points + bonusPoints - penaltyPoints) >= 1, то игрок выиграл в этой роли
+        const totalPlayerPoints = (player.points || 0) + (player.bonusPoints || 0) - (player.penaltyPoints || 0);
+        if (totalPlayerPoints >= 1) {
+          playerStats.roleStats[role].won += 1;
+        }
+      });
+    });
+
+    // Сортируем по общим очкам
+    return Array.from(statsMap.values()).sort((a, b) => 
+      (b.totalPoints + b.totalBonusPoints - b.totalPenaltyPoints) - 
+      (a.totalPoints + a.totalBonusPoints - a.totalPenaltyPoints)
+    );
+  }, [tournament.games]);
+
+  // Функция для получения статистики по роли
+  const getRoleStats = (stats: PlayerStats, role: string) => {
+    const roleData = stats.roleStats[role];
+    if (!roleData || roleData.played === 0) return "";
+    return `${roleData.won}/${roleData.played}`;
+  };
+
+  if (playersStats.length === 0) {
+    return (
+      <div className="overflow-auto rounded-lg border border-gray-800 bg-[#111111]">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-400">Нет данных для отображения турнирной таблицы</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-auto rounded-lg border border-gray-800 bg-[#111111]">
       <table className="w-full text-sm text-white border-collapse">
         <thead className="bg-[#1E1E1E]">
           <tr>
-            {["#", "Игрок", "Σ", "Σ+", "ЛХ", "Си", "ПУ", "К", "Ш", "Кр", "Док", "Д", "Ч", "М", "Winrate", "ELO"].map((col, i) => (
-              <th key={i} className="border border-gray-700 px-2 py-2 whitespace-nowrap font-normal">{col}</th>
+            {["#", "Игрок", "Σ", "Σ+", "Σ-", "Игр", "Мафия", "Дон", "Шериф", "Доктор", "Маньяк", "Красотка", "Мирный"].map((col, i) => (
+              <th key={i} className="border border-gray-700 px-2 py-2 whitespace-nowrap font-normal text-xs">{col}</th>
             ))}
           </tr>
         </thead>
         <tbody className="text-center">
-          {tableData.map((row, i) => (
-            <tr key={i} className="border-b border-gray-800">
-              <td className="border-r border-gray-700 px-2 py-2">{i + 1}</td>
-              <td className="border-r border-gray-700 px-2 py-2 text-left whitespace-nowrap">{row[0]}</td>
-              {row.slice(1).map((cell, j) => (
-                <td key={j} className="border-r border-gray-700 px-2 py-2 whitespace-nowrap">{cell}</td>
-              ))}
-            </tr>
-          ))}
+          {playersStats.map((player, i) => {
+            const totalScore = player.totalPoints + player.totalBonusPoints - player.totalPenaltyPoints;
+            
+            return (
+              <tr key={player.playerId} className="border-b border-gray-800 hover:bg-gray-800/30">
+                <td className="border-r border-gray-700 px-2 py-2 font-medium">{i + 1}</td>
+                <td className="border-r border-gray-700 px-2 py-2 text-left whitespace-nowrap font-medium">
+                  {player.nickname}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 font-bold text-yellow-400">
+                  {Number(totalScore.toFixed(1))}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-green-400">
+                  {Number(player.totalBonusPoints.toFixed(1))}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-red-400">
+                  {Number(player.totalPenaltyPoints.toFixed(1))}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2">
+                  {player.gamesPlayed}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-red-300">
+                  {getRoleStats(player, 'MAFIA')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-red-400">
+                  {getRoleStats(player, 'DON')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-yellow-300">
+                  {getRoleStats(player, 'DETECTIVE')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-green-300">
+                  {getRoleStats(player, 'DOCTOR')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-orange-300">
+                  {getRoleStats(player, 'MANIAC')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-pink-300">
+                  {getRoleStats(player, 'BEAUTY')}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-blue-300">
+                  {getRoleStats(player, 'CITIZEN')}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

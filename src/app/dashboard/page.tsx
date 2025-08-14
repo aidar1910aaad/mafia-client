@@ -1,10 +1,10 @@
 import AuthGuard from '../../components/Auth/AuthGuard';
-import TournamentDetails from '../../components/TournamentDetails/TournamentDetails';
+import Dashboard from '../../components/Dashboard/Dashboard';
 
 export default function DashboardPage() {
     return (
         <AuthGuard requireAuth={true} requireAdmin={false}>
-            <TournamentDetails />
+            <Dashboard />
         </AuthGuard>
     );
 } 

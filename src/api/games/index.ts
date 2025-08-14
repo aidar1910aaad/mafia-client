@@ -3,9 +3,12 @@ import { API_URL } from '../API_URL';
 export interface GamePlayer {
     id: number;
     playerId: number;
-    role: 'MAFIA' | 'CITIZEN';
+    role: 'MAFIA' | 'CITIZEN' | 'DOCTOR' | 'DETECTIVE' | 'DON' | 'MANIAC' | 'BEAUTY';
     status?: 'ALIVE' | 'DEAD' | 'KICKED';
+    seatIndex?: number | null;
     points: number;
+    bonusPoints: number;
+    penaltyPoints: number;
     kills: number;
     deaths: number;
     gamesPlayed?: number;
@@ -128,6 +131,25 @@ export interface GamesFilters {
     tournamentId?: number;
 }
 
+export interface GenerateGamesRequest {
+    tablesCount: number;
+    roundsCount: number;
+    playersPerGame: number;
+    totalGames: number;
+    playerNicknames: string[];
+    tournamentId: number;
+}
+
+export interface UpdateGameResultsRequest {
+    playerResults: {
+        playerId: number;
+        role: string;
+        points: number;
+        bonusPoints: number;
+        penaltyPoints: number;
+    }[];
+}
+
 export const gamesAPI = {
     // Создание новой игры
     async createGame(data: CreateGameRequest): Promise<Game> {
@@ -219,6 +241,161 @@ export const gamesAPI = {
             return await response.json();
         } catch (error) {
             throw error;
+        }
+    },
+
+    // Генерация игр для турнира
+    async generateGames(data: GenerateGamesRequest): Promise<Game[]> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            console.log('Отправляем запрос на генерацию игр:', data);
+            console.log('=== ДЕТАЛИ ЗАПРОСА ===');
+            console.log('URL:', `${API_URL}/games/generate`);
+            console.log('Метод: POST');
+            console.log('Заголовки:', {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token.substring(0, 20)}...`
+            });
+            console.log('Тело запроса (JSON):', JSON.stringify(data, null, 2));
+            console.log('========================');
+
+            const response = await fetch(`${API_URL}/games/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            });
+
+            console.log('Статус ответа:', response.status);
+            console.log('Заголовки ответа:', Object.fromEntries(response.headers.entries()));
+            console.log('=== ДЕТАЛИ ОТВЕТА ===');
+            console.log('Статус:', response.status, response.statusText);
+            console.log('Заголовки:', Object.fromEntries(response.headers.entries()));
+            
+            // Пытаемся прочитать тело ответа
+            const responseText = await response.text();
+            console.log('Тело ответа (текст):', responseText);
+            
+            let responseData;
+            try {
+                responseData = JSON.parse(responseText);
+                console.log('Тело ответа (JSON):', responseData);
+            } catch (parseError) {
+                console.log('Ответ не является валидным JSON');
+            }
+            console.log('========================');
+
+            if (!response.ok) {
+                let errorMessage = `Ошибка генерации игр: ${response.status}`;
+                
+                try {
+                    const errorData = responseData || await response.json();
+                    console.error('Детали ошибки:', errorData);
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (parseError) {
+                    console.error('Не удалось распарсить ответ ошибки:', parseError);
+                    errorMessage = responseText || errorMessage;
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+            const result = responseData || await response.json();
+            console.log('Успешно сгенерированы игры:', result);
+            return result;
+        } catch (error) {
+            console.error('Полная ошибка генерации игр:', error);
+            throw error;
+        }
+    },
+
+    // Обновление результатов игры
+    async updateGameResults(gameId: number, data: UpdateGameResultsRequest): Promise<GamePlayer[]> {
+        try {
+            const token = localStorage.getItem('authToken');
+            if (!token) { throw new Error('Токен не найден'); }
+
+            console.log('Отправляем обновление результатов игры:', { gameId, data });
+            
+            const response = await fetch(`${API_URL}/games/${gameId}/results`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            });
+
+            console.log('Статус ответа:', response.status);
+            console.log('Заголовки ответа:', Object.fromEntries(response.headers.entries()));
+            
+            const responseText = await response.text();
+            console.log('Тело ответа (текст):', responseText);
+            
+            let responseData;
+            try {
+                responseData = JSON.parse(responseText);
+                console.log('Тело ответа (JSON):', responseData);
+            } catch (parseError) {
+                console.log('Ответ не является валидным JSON');
+            }
+
+            if (!response.ok) {
+                let errorMessage = `Ошибка обновления результатов: ${response.status}`;
+                try {
+                    const errorData = responseData || await response.json();
+                    console.error('Детали ошибки:', errorData);
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (parseError) {
+                    console.error('Не удалось распарсить ответ ошибки:', parseError);
+                    errorMessage = responseText || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+            
+            const result = responseData || await response.json();
+            console.log('Результаты успешно обновлены:', result);
+            return result;
+        } catch (error) {
+            console.error('Полная ошибка обновления результатов:', error);
+            throw error;
+        }
+    },
+
+    // Тестовый метод для проверки доступности API
+    async testGenerateGamesAPI(): Promise<boolean> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            console.log('Тестируем доступность API генерации игр...');
+
+            const response = await fetch(`${API_URL}/games/generate`, {
+                method: 'OPTIONS',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            console.log('Тест API - статус:', response.status);
+            return response.ok;
+        } catch (error) {
+            console.error('Ошибка тестирования API:', error);
+            return false;
         }
     }
 }; 

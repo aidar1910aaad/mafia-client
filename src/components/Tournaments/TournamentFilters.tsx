@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
+import React from 'react';
+import { Search, Users, Trophy, Calendar } from 'lucide-react';
 
 interface TournamentFiltersProps {
   search: string;
@@ -12,6 +12,12 @@ interface TournamentFiltersProps {
   onSortByChange: (value: string) => void;
   sortOrder: string;
   onSortOrderChange: (value: string) => void;
+  dateFilter: string;
+  onDateFilterChange: (value: string) => void;
+  typeFilter: string;
+  onTypeFilterChange: (value: string) => void;
+  ratingFilter: string;
+  onRatingFilterChange: (value: string) => void;
 }
 
 const TournamentFilters: React.FC<TournamentFiltersProps> = ({
@@ -23,9 +29,13 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
   onSortByChange,
   sortOrder,
   onSortOrderChange,
+  dateFilter,
+  onDateFilterChange,
+  typeFilter,
+  onTypeFilterChange,
+  ratingFilter,
+  onRatingFilterChange,
 }) => {
-  const [showFilters, setShowFilters] = useState(false);
-
   return (
     <div className="bg-[#2A2A2A] rounded-xl p-4 mb-6">
       <div className="flex flex-col md:flex-row gap-4 items-center">
@@ -41,57 +51,50 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
           />
         </div>
 
-        {/* Filter Toggle */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors"
-        >
-          <Filter className="w-4 h-4" />
-          Фильтры
-        </button>
-
-        {/* Sort */}
+        {/* Date Filter */}
         <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-gray-400" />
           <select
-            value={sortBy}
-            onChange={(e) => onSortByChange(e.target.value)}
-            className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF]"
+            value={dateFilter}
+            onChange={(e) => onDateFilterChange(e.target.value)}
+            className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
           >
-            <option value="date">По дате</option>
-            <option value="name">По названию</option>
-            <option value="clubName">По клубу</option>
-            <option value="createdAt">По дате создания</option>
+            <option value="">Все</option>
+            <option value="30days">Ближайшие 30 дней</option>
+            <option value="3months">Ближайшие 3 месяца</option>
+            <option value="upcoming">Все запланированные</option>
+            <option value="completed">Состоявшиеся</option>
           </select>
-          <button
-            onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="p-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors"
+        </div>
+
+        {/* Type Filter */}
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-gray-400" />
+          <select
+            value={typeFilter}
+            onChange={(e) => onTypeFilterChange(e.target.value)}
+            className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
           >
-            {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
-          </button>
+            <option value="">Все</option>
+            <option value="individual">Личные</option>
+            <option value="team">Командные</option>
+          </select>
+        </div>
+
+        {/* Rating Filter */}
+        <div className="flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-gray-400" />
+          <select
+            value={ratingFilter}
+            onChange={(e) => onRatingFilterChange(e.target.value)}
+            className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
+          >
+            <option value="">Все</option>
+            <option value="rated">С рейтингом СМА</option>
+            <option value="unrated">Вне рейтинга</option>
+          </select>
         </div>
       </div>
-
-      {/* Expanded Filters */}
-      {showFilters && (
-        <div className="mt-4 pt-4 border-t border-[#404040]">
-          <div className="flex flex-wrap gap-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-2">Статус</label>
-              <select
-                value={status}
-                onChange={(e) => onStatusChange(e.target.value)}
-                className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF]"
-              >
-                <option value="">Все статусы</option>
-                <option value="UPCOMING">Предстоящие</option>
-                <option value="ACTIVE">Активные</option>
-                <option value="COMPLETED">Завершенные</option>
-                <option value="CANCELLED">Отмененные</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

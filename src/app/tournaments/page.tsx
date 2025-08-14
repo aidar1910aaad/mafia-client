@@ -24,7 +24,10 @@ export default function TournamentsPage() {
     search: '',
     status: '',
     sortBy: 'date',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
+    dateFilter: '',
+    typeFilter: '',
+    ratingFilter: ''
   });
 
   const fetchTournaments = async () => {
@@ -65,6 +68,18 @@ export default function TournamentsPage() {
 
   const handleSortOrderChange = (value: string) => {
     setFilters(prev => ({ ...prev, sortOrder: value, page: 1 }));
+  };
+
+  const handleDateFilterChange = (value: string) => {
+    setFilters(prev => ({ ...prev, dateFilter: value, page: 1 }));
+  };
+
+  const handleTypeFilterChange = (value: string) => {
+    setFilters(prev => ({ ...prev, typeFilter: value, page: 1 }));
+  };
+
+  const handleRatingFilterChange = (value: string) => {
+    setFilters(prev => ({ ...prev, ratingFilter: value, page: 1 }));
   };
 
   const handlePageChange = (page: number) => {
@@ -116,6 +131,12 @@ export default function TournamentsPage() {
           onSortByChange={handleSortByChange}
           sortOrder={filters.sortOrder || 'desc'}
           onSortOrderChange={handleSortOrderChange}
+          dateFilter={filters.dateFilter || ''}
+          onDateFilterChange={handleDateFilterChange}
+          typeFilter={filters.typeFilter || ''}
+          onTypeFilterChange={handleTypeFilterChange}
+          ratingFilter={filters.ratingFilter || ''}
+          onRatingFilterChange={handleRatingFilterChange}
         />
 
         {/* Loading State */}

@@ -1,4 +1,9 @@
 import React from 'react';
+import { Tournament } from '../../api/tournaments';
+
+interface NominationsGridProps {
+  tournament?: Tournament;
+}
 
 const NominationCard = ({ title, players, color }: { title: string; players: string[]; color: string }) => {
   return (
@@ -15,7 +20,19 @@ const NominationCard = ({ title, players, color }: { title: string; players: str
   );
 };
 
-const NominationsGrid = () => {
+const NominationsGrid = ({ tournament }: NominationsGridProps) => {
+  // Если турнир не загружен, показываем загрузку
+  if (!tournament) {
+    return (
+      <div className="bg-[#111111] rounded-2xl p-6 border border-gray-800">
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-400">Загрузка номинаций...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Пока используем статические данные, так как API не предоставляет детальную информацию о номинациях
   const nominations = [
     { title: 'MVP', players: ['Керамбит', 'Diablo', 'BWDMoscow'], color: '#FFFFFF' },
     { title: 'Дон', players: ['Керамбит', 'Diablo', 'BWDMoscow'], color: '#FFFFFF' },
