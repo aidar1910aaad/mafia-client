@@ -11,7 +11,7 @@ export default function EloPage() {
             <div className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-6">
               <h2 className="text-white text-xl font-semibold mb-4">Как работает ELO система</h2>
               <p className="text-gray-400 mb-4">
-                ELO рейтинг - это математическая система оценки относительной силы игроков в играх с нулевой суммой.
+                ELO рейтинг ff - это математическая система оценки относительной силы игроков в играх с нулевой суммой.
               </p>
               <div className="space-y-2 text-sm text-gray-400">
                 <p>• При победе над более сильным игроком вы получаете больше очков</p>
