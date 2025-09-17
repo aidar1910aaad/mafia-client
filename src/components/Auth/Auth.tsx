@@ -64,7 +64,7 @@ export default function Auth() {
                 if (response.user?.role === 'admin') {
                     router.push('/admin');
                 } else {
-                    router.push('/dashboard');
+                    router.push('/tournaments');
                 }
             } else {
                 setError(response.message || 'Произошла ошибка');
@@ -109,7 +109,7 @@ export default function Auth() {
                             <div>
                                 <h2 className="text-white text-xl font-bold mb-2">Вы успешно авторизованы!</h2>
                                 <p className="text-[#C7C7C7] text-sm">
-                                    {user?.role === 'admin' ? 'Перейдите в админ панель' : 'Перейдите в панель управления'}
+                                    {user?.role === 'admin' ? 'Перейдите в админ панель' : 'Перейдите к турнирам'}
                                 </p>
                             </div>
                             <div className="space-y-3">
@@ -118,12 +118,12 @@ export default function Auth() {
                                         if (user?.role === 'admin') {
                                             router.push('/admin');
                                         } else {
-                                            router.push('/dashboard');
+                                            router.push('/tournaments');
                                         }
                                     }}
                                     className="w-full bg-gradient-to-r from-[#8469EF] to-[#6B4FFF] hover:from-[#6B4FFF] hover:to-[#5A3FE8] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                                 >
-                                    {user?.role === 'admin' ? 'Перейти в админ панель' : 'Перейти в панель управления'}
+                                    {user?.role === 'admin' ? 'Перейти в админ панель' : 'Перейти к турнирам'}
                                 </button>
                                 <button
                                     onClick={async () => {

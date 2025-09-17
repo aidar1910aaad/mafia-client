@@ -1,0 +1,6 @@
+<svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="28" cy="28" r="28" fill="#404040"/>
+  <circle cx="28" cy="20" r="8" fill="#666666"/>
+  <path d="M16 44c0-6.627 5.373-12 12-12s12 5.373 12 12" fill="#666666"/>
+  <text x="28" y="32" text-anchor="middle" fill="#FFFFFF" font-family="Arial" font-size="8" font-weight="bold">CLUB</text>
+</svg>

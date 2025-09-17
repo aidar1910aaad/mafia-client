@@ -66,7 +66,7 @@ export default function AdminPanel() {
             case 'games':
                 return <GamesTab />;
             case 'tournaments':
-                return <TournamentsTab />;
+                return <TournamentsTab message={message} setMessage={setMessage} />;
             case 'statistics':
                 return <StatisticsTab />;
             case 'settings':

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI, UserProfile } from '../../api/auth';
+import { selfAPI, UserProfile } from '../../api/self';
 import MessageDisplay from './MessageDisplay';
 import Avatar from '../UI/Avatar';
 
@@ -13,17 +13,24 @@ export default function ProfilePage() {
     const [messageType, setMessageType] = useState<'success' | 'error'>('success');
     const router = useRouter();
 
+    // Форматируем числа для отображения
+    const formatNumber = (num: number | undefined) => {
+        if (!num) return '0';
+        // Если число целое, показываем без десятичных знаков
+        if (Number.isInteger(num)) return num.toString();
+        // Иначе округляем до 1 знака после запятой
+        return num.toFixed(1);
+    };
+
     useEffect(() => {
         const getUserInfo = async () => {
             try {
-                const profileResponse = await authAPI.getProfile();
+                const profileResponse = await selfAPI.getProfile();
                 setUser(profileResponse);
             } catch (error) {
                 console.error('Ошибка получения профиля:', error);
-                const response = await authAPI.verifyToken();
-                if (response.success && response.user) {
-                    setUser(response.user as UserProfile);
-                }
+                setMessage('Ошибка при загрузке профиля');
+                setMessageType('error');
             } finally {
                 setLoading(false);
             }
@@ -37,7 +44,7 @@ export default function ProfilePage() {
 
         try {
             setMessage('');
-            const updatedUser = await authAPI.uploadAvatar(file);
+            const updatedUser = await selfAPI.uploadAvatar(file);
             setUser(updatedUser);
             setMessage('Аватар успешно загружен!');
             setMessageType('success');
@@ -109,14 +116,17 @@ export default function ProfilePage() {
                                     {user?.nickname || 'Игровой Никнейм'}
                                 </h1>
                                 
-                                {/* Клуб */}
+                                {/* Email */}
                                 <p className="text-white text-lg mb-1">
-                                    {user?.club?.name || 'Клуб игрока'}
+                                    {user?.email || 'Email не указан'}
                                 </p>
                                 
-                                {/* Город */}
+                                {/* Роль */}
                                 <p className="text-white text-base">
-                                    {'Город игрока'}
+                                    {user?.role === 'admin' ? 'Администратор' : 
+                                     user?.role === 'club_owner' ? 'Владелец клуба' : 
+                                     user?.role === 'player' ? 'Игрок' : 
+                                     user?.role || 'Неизвестная роль'}
                                 </p>
                             </div>
                         </div>
@@ -125,38 +135,45 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
                                 <h3 className="text-white font-semibold mb-2">Побед/Игр всего</h3>
-                                <p className="text-white text-lg">800/1200 (Winrate - 72%)</p>
+                                <p className="text-white text-lg">
+                                    {user?.totalWins || 0}/{user?.totalGames || 0} 
+                                    {user?.totalGames && user.totalGames > 0 ? 
+                                        ` (Winrate - ${((user.totalWins / user.totalGames) * 100).toFixed(1)}%)` : 
+                                        ' (Winrate - 0%)'
+                                    }
+                                </p>
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2">Всего</h3>
-                                <p className="text-white text-lg">414,61</p>
+                                <h3 className="text-white font-semibold mb-2">Всего очков</h3>
+                                <p className="text-white text-lg">{formatNumber(user?.totalPoints)}</p>
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
                                 <h3 className="text-white font-semibold mb-2">Средний балл</h3>
-                                <p className="text-white text-lg">0,7051</p>
+                                <p className="text-white text-lg">
+                                    {user?.totalGames && user.totalGames > 0 ? 
+                                        formatNumber(user.totalPoints / user.totalGames) : 
+                                        '0'
+                                    }
+                                </p>
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
                                 <h3 className="text-white font-semibold mb-2">Всего допов</h3>
-                                <p className="text-white text-lg">100,4</p>
+                                <p className="text-white text-lg">{formatNumber(user?.totalBonusPoints)}</p>
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2">ПУ</h3>
-                                <p className="text-white text-lg">71</p>
+                                <h3 className="text-white font-semibold mb-2">Рейтинг ELO</h3>
+                                <p className="text-white text-lg">{formatNumber(user?.eloRating)}</p>
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2">ЛХ</h3>
-                                <div className="space-y-1">
-                                    <p className="text-white text-sm">4 черных - 11 (5,63%)</p>
-                                    <p className="text-white text-sm">3 черных - 4 (5,63%)</p>
-                                    <p className="text-white text-sm">2 черных - 29 (40,85%)</p>
-                                    <p className="text-white text-sm">1 черный - 27 (38,03%)</p>
-                                    <p className="text-white text-sm">0 черный - 27 (38,03%)</p>
-                                </div>
+                                <h3 className="text-white font-semibold mb-2">Статус аккаунта</h3>
+                                <p className="text-white text-sm">
+                                    {user?.confirmed ? 'Подтвержден' : 'Не подтвержден'}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -167,76 +184,155 @@ export default function ProfilePage() {
                         <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-2xl p-6">
                             <h3 className="text-white font-semibold mb-4 text-center">Распределение ролей</h3>
                             
-                            {/* Заглушка для диаграммы */}
+                            {/* Диаграмма ролей */}
                             <div className="w-64 h-64 mx-auto mb-6 rounded-full border-8 border-[#404040] relative">
-                                <div className="absolute inset-0 rounded-full" style={{
-                                    background: 'conic-gradient(from 0deg, #8B5CF6 0deg 120deg, #F97316 120deg 240deg, #EC4899 240deg 360deg)'
-                                }}></div>
-                                <div className="absolute inset-4 rounded-full bg-[#2A2A2A]"></div>
+                                {(() => {
+                                    if (!user?.roleStats || user.roleStats.length === 0) {
+                                        return (
+                                            <div className="absolute inset-4 rounded-full bg-[#2A2A2A] flex items-center justify-center">
+                                                <span className="text-white text-sm">Нет данных</span>
+                                            </div>
+                                        );
+                                    }
+                                    
+                                    const totalGames = user.roleStats.reduce((sum, stat) => sum + stat.gamesPlayed, 0);
+                                    if (totalGames === 0) {
+                                        return (
+                                            <div className="absolute inset-4 rounded-full bg-[#2A2A2A] flex items-center justify-center">
+                                                <span className="text-white text-sm">Нет игр</span>
+                                            </div>
+                                        );
+                                    }
+                                    
+                                    const roleColors = {
+                                        'CITIZEN': '#10B981',
+                                        'MAFIA': '#EF4444',
+                                        'DETECTIVE': '#3B82F6',
+                                        'MANIAC': '#8B5CF6',
+                                        'BEAUTY': '#EC4899',
+                                        'DOCTOR': '#06B6D4',
+                                        'DON': '#F97316'
+                                    };
+                                    
+                                    let currentAngle = 0;
+                                    const segments = user.roleStats
+                                        .filter(stat => stat.gamesPlayed > 0)
+                                        .map(stat => {
+                                            const angle = (stat.gamesPlayed / totalGames) * 360;
+                                            const segment = {
+                                                role: stat.role,
+                                                angle,
+                                                startAngle: currentAngle,
+                                                endAngle: currentAngle + angle,
+                                                color: roleColors[stat.role as keyof typeof roleColors] || '#6B7280'
+                                            };
+                                            currentAngle += angle;
+                                            return segment;
+                                        });
+                                    
+                                    const conicGradient = segments.length > 0 ? 
+                                        `conic-gradient(from 0deg, ${segments.map(seg => 
+                                            `${seg.color} ${seg.startAngle}deg ${seg.endAngle}deg`
+                                        ).join(', ')})` : 
+                                        'conic-gradient(from 0deg, #6B7280 0deg 360deg)';
+                                    
+                                    return (
+                                        <>
+                                            <div className="absolute inset-0 rounded-full" style={{
+                                                background: conicGradient
+                                            }}></div>
+                                            <div className="absolute inset-4 rounded-full bg-[#2A2A2A] flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <div className="text-white text-lg font-bold">{totalGames}</div>
+                                                    <div className="text-white text-xs">всего игр</div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             {/* Легенда ролей */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-red-400 text-sm">Мирный - 8,39 доп. (макс. 0.7)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-purple-400 text-sm">Мафия - 2,39 доп. (макс. 0.2)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-blue-400 text-sm">Дон - 2,39 доп. (макс. 0.2)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-white text-sm">Шериф - 8,39 доп. (макс. 0.7)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-white text-sm">Красотка - 8,39 доп. (макс. 0.7)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-white text-sm">Доктор - 8,39 доп. (макс. 0.7)</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-white text-sm">Маньяк - 8,39 доп. (макс. 0.7)</span>
-                                </div>
+                            <div className="grid grid-cols-1 gap-2">
+                                {user?.roleStats?.filter(stat => stat.gamesPlayed > 0).map((roleStat) => {
+                                    const roleNames: { [key: string]: string } = {
+                                        'CITIZEN': 'Мирный',
+                                        'MAFIA': 'Мафия',
+                                        'DETECTIVE': 'Шериф',
+                                        'MANIAC': 'Маньяк',
+                                        'BEAUTY': 'Красотка',
+                                        'DOCTOR': 'Доктор',
+                                        'DON': 'Дон'
+                                    };
+                                    
+                                    const roleColors: { [key: string]: string } = {
+                                        'CITIZEN': 'text-green-400',
+                                        'MAFIA': 'text-red-400',
+                                        'DETECTIVE': 'text-blue-400',
+                                        'MANIAC': 'text-purple-400',
+                                        'BEAUTY': 'text-pink-400',
+                                        'DOCTOR': 'text-cyan-400',
+                                        'DON': 'text-orange-400'
+                                    };
+                                    
+                                    const percentage = user.totalGames > 0 ? 
+                                        ((roleStat.gamesPlayed / user.totalGames) * 100).toFixed(1) : 
+                                        '0.0';
+                                    
+                                    return (
+                                        <div key={roleStat.id} className="flex justify-between items-center">
+                                            <span className={`text-sm ${roleColors[roleStat.role] || 'text-white'}`}>
+                                                {roleNames[roleStat.role] || roleStat.role} - {roleStat.gamesPlayed} игр ({percentage}%)
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                                {(!user?.roleStats || user.roleStats.filter(stat => stat.gamesPlayed > 0).length === 0) && (
+                                    <div className="text-center text-gray-400 text-sm">
+                                        Нет данных о ролях
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Статистика по ролям */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Мирный</h3>
-                                <p className="text-white text-sm">Winrate - 80% (7/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Мафия</h3>
-                                <p className="text-white text-sm">Winrate - 40% (2/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Шериф</h3>
-                                <p className="text-white text-sm">Winrate - 80% (7/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Маньяк</h3>
-                                <p className="text-white text-sm">Winrate - 40% (2/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Красотка</h3>
-                                <p className="text-white text-sm">Winrate - 80% (7/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Доктор</h3>
-                                <p className="text-white text-sm">Winrate - 40% (2/36 игр)</p>
-                            </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2 text-sm">Победы на карте Дон</h3>
-                                <p className="text-white text-sm">Winrate - 80% (7/36 игр)</p>
-                            </div>
+                            {user?.roleStats?.map((roleStat) => {
+                                const winRate = roleStat.gamesPlayed > 0 ? 
+                                    ((roleStat.gamesWon / roleStat.gamesPlayed) * 100).toFixed(1) : 
+                                    '0.0';
+                                
+                                const roleNames: { [key: string]: string } = {
+                                    'CITIZEN': 'Мирный',
+                                    'MAFIA': 'Мафия',
+                                    'DETECTIVE': 'Шериф',
+                                    'MANIAC': 'Маньяк',
+                                    'BEAUTY': 'Красотка',
+                                    'DOCTOR': 'Доктор',
+                                    'DON': 'Дон'
+                                };
+                                
+                                const roleColors: { [key: string]: string } = {
+                                    'CITIZEN': 'text-green-400',
+                                    'MAFIA': 'text-red-400',
+                                    'DETECTIVE': 'text-blue-400',
+                                    'MANIAC': 'text-purple-400',
+                                    'BEAUTY': 'text-pink-400',
+                                    'DOCTOR': 'text-cyan-400',
+                                    'DON': 'text-orange-400'
+                                };
+                                
+                                return (
+                                    <div key={roleStat.id} className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
+                                        <h3 className={`font-semibold mb-2 text-sm ${roleColors[roleStat.role] || 'text-white'}`}>
+                                            {roleNames[roleStat.role] || roleStat.role}
+                                        </h3>
+                                        <p className="text-white text-sm">
+                                            Winrate - {winRate}% ({roleStat.gamesWon}/{roleStat.gamesPlayed} игр)
+                                        </p>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

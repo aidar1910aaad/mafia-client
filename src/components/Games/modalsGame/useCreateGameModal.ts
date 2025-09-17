@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { gamesAPI, CreateGameRequest, GamePlayer } from '../../../api/games';
+import { gamesAPI, CreateGameRequest, GamePlayer, GameResult } from '../../../api/games';
 import { usersAPI } from '../../../api/users';
 import { User, GameFormData, PlayerUser, UnregisteredUser } from './types';
 
@@ -22,7 +22,7 @@ export function useCreateGameModal(
     name: '',
     description: '',
     scheduledDate: '',
-    result: 'MAFIA_WIN',
+    result: '', // Убираем значение по умолчанию
     resultTable: {}
   });
   
@@ -217,6 +217,8 @@ export function useCreateGameModal(
         playerId: player.playerId,
         role: 'CITIZEN',
         points: 0,
+        bonusPoints: 0,
+        penaltyPoints: 0,
         kills: 0,
         deaths: 0,
         notes: '',
@@ -231,7 +233,7 @@ export function useCreateGameModal(
         clubId: Number(clubId),
         seasonId: seasonId ? Number(seasonId) : undefined,
         tournamentId: tournamentId ? Number(tournamentId) : undefined,
-        result: formData.result,
+        result: formData.result || null,
         resultTable: formData.resultTable,
         players: fullPlayers
       };
@@ -246,7 +248,7 @@ export function useCreateGameModal(
         name: '',
         description: '',
         scheduledDate: '',
-        result: 'MAFIA_WIN',
+        result: '',
         resultTable: {}
       });
       setPlayers([]);

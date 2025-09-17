@@ -22,11 +22,35 @@ import {
 import { seasonsAPI, Season } from '../../../api/seasons';
 import { authAPI } from '../../../api/auth';
 import GamesList from '../../../components/Games/GamesList';
+import { API_URL } from '../../../api/API_URL';
 
 export default function SeasonPage() {
   const params = useParams();
   const router = useRouter();
   const seasonId = params.id;
+
+  // Функция для правильного формирования пути к логотипу
+  const getValidLogoPath = (logoPath: string | null | undefined) => {
+    if (!logoPath) return null;
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (logoPath.startsWith('http')) {
+      return logoPath;
+    }
+    
+    // Если это путь к файлу аватара клуба, используем API endpoint
+    if (logoPath.includes('club-avatars') || logoPath.includes('avatar')) {
+      return `${API_URL}/files/club-avatars/${logoPath}`;
+    }
+    
+    // Если уже правильный путь, возвращаем как есть
+    if (logoPath.startsWith('/')) {
+      return logoPath;
+    }
+    
+    // Иначе добавляем ведущий слеш
+    return `/${logoPath}`;
+  };
   
   const [season, setSeason] = useState<Season | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -128,13 +152,36 @@ export default function SeasonPage() {
           <div className="text-center">
             <div className="text-red-400 text-lg mb-4">Ошибка загрузки сезона</div>
             <div className="text-gray-400 mb-4">{error || 'Сезон не найден'}</div>
-            <Link
-              href="/seasons"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Вернуться к списку сезонов
-            </Link>
+            {error && error.includes('необходимо авторизоваться') ? (
+              <div className="mt-4">
+                <p className="text-gray-400 mb-4">
+                  Для просмотра сезона необходимо войти в систему
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Link 
+                    href="/auth"
+                    className="px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
+                  >
+                    Войти в систему
+                  </Link>
+                  <Link
+                    href="/seasons"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    К списку сезонов
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <Link
+                href="/seasons"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Вернуться к списку сезонов
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -168,9 +215,9 @@ export default function SeasonPage() {
                     {getStatusText(season.status)}
                   </span>
                 </div>
-                {season.club?.logo && (
+                {season.club?.logo && getValidLogoPath(season.club.logo) && (
                   <Image 
-                    src={season.club.logo} 
+                    src={getValidLogoPath(season.club.logo)!} 
                     alt="Club logo" 
                     width={80} 
                     height={80} 

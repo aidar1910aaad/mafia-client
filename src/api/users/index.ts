@@ -21,13 +21,47 @@ export interface Player {
     totalGames: number;
     totalWins: number;
     totalPoints: number;
-    totalKills: number;
-    totalDeaths: number;
-    mafiaGames: number;
-    mafiaWins: number;
-    citizenGames: number;
-    citizenWins: number;
+    totalKills?: number;
+    totalDeaths?: number;
+    mafiaGames?: number;
+    mafiaWins?: number;
+    citizenGames?: number;
+    citizenWins?: number;
+    eloRating: number;
     createdAt: string;
+}
+
+export interface RoleStat {
+    id: number;
+    role: string;
+    gamesPlayed: number;
+    gamesWon: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ExtendedPlayerProfile {
+    id: number;
+    email: string;
+    nickname: string;
+    avatar: string | null;
+    role: string;
+    confirmed: boolean;
+    clubName?: string;
+    totalGames: number;
+    totalWins: number;
+    totalPoints: number;
+    totalKills?: number;
+    totalDeaths?: number;
+    mafiaGames?: number;
+    mafiaWins?: number;
+    citizenGames?: number;
+    citizenWins?: number;
+    eloRating: number;
+    totalBonusPoints: number;
+    roleStats: RoleStat[];
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface PlayersResponse {
@@ -60,10 +94,6 @@ export const usersAPI = {
     async getAllPlayers(filters: PlayersFilters = {}): Promise<PlayersResponse> {
         try {
             const token = localStorage.getItem('authToken');
-            
-            if (!token) {
-                throw new Error('Токен не найден');
-            }
 
             // Build query parameters
             const params = new URLSearchParams();
@@ -74,12 +104,18 @@ export const usersAPI = {
             if (filters.sortBy) params.append('sortBy', filters.sortBy);
             if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/users?${params.toString()}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
@@ -170,17 +206,19 @@ export const usersAPI = {
     async getUserById(id: number): Promise<Player> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/users/${id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
@@ -198,22 +236,54 @@ export const usersAPI = {
     async getPlayerById(id: number): Promise<Player> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/users/${id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `Ошибка получения игрока: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Получение расширенного профиля пользователя по ID
+    async getExtendedPlayerProfile(id: number): Promise<ExtendedPlayerProfile> {
+        try {
+            const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            const response = await fetch(`${API_URL}/users/extended-profile/${id}`, {
+                method: 'GET',
+                headers,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка получения расширенного профиля: ${response.status}`);
             }
 
             return await response.json();

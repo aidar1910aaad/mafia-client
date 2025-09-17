@@ -82,10 +82,6 @@ export const seasonsAPI = {
     async getAllSeasons(filters: SeasonsFilters = {}): Promise<SeasonsResponse> {
         try {
             const token = localStorage.getItem('authToken');
-            
-            if (!token) {
-                throw new Error('Токен не найден');
-            }
 
             // Build query parameters
             const params = new URLSearchParams();
@@ -98,16 +94,34 @@ export const seasonsAPI = {
             if (filters.sortBy) params.append('sortBy', filters.sortBy);
             if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/seasons?${params.toString()}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Если ошибка Unauthorized и нет токена, возвращаем пустой результат для публичного доступа
+                if (response.status === 401 && !token) {
+                    return {
+                        seasons: [],
+                        total: 0,
+                        page: 1,
+                        limit: filters.limit || 10,
+                        totalPages: 0,
+                        hasNext: false,
+                        hasPrev: false
+                    };
+                }
                 throw new Error(errorData.message || `Ошибка получения сезонов: ${response.status}`);
             }
 
@@ -151,21 +165,27 @@ export const seasonsAPI = {
     async getClubSeasons(clubId: number): Promise<Season[]> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/seasons?clubId=${clubId}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Если ошибка Unauthorized и нет токена, возвращаем пустой массив для публичного доступа
+                if (response.status === 401 && !token) {
+                    return [];
+                }
                 throw new Error(errorData.message || `Ошибка получения сезонов: ${response.status}`);
             }
 
@@ -181,21 +201,27 @@ export const seasonsAPI = {
     async getSeasonById(id: number): Promise<Season> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/seasons/${id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Если ошибка Unauthorized и нет токена, выбрасываем ошибку для публичного доступа
+                if (response.status === 401 && !token) {
+                    throw new Error('Для просмотра сезона необходимо авторизоваться');
+                }
                 throw new Error(errorData.message || `Ошибка получения сезона: ${response.status}`);
             }
 

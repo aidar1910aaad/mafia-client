@@ -11,6 +11,8 @@ interface PlayerStats {
   totalPoints: number;
   totalBonusPoints: number;
   totalPenaltyPoints: number;
+  totalLh: number;
+  totalCi: number;
   gamesPlayed: number;
   roleStats: {
     [role: string]: { played: number; won: number };
@@ -53,6 +55,8 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
             totalPoints: 0,
             totalBonusPoints: 0,
             totalPenaltyPoints: 0,
+            totalLh: 0,
+            totalCi: 0,
             gamesPlayed: 0,
             roleStats: {}
           });
@@ -64,6 +68,8 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
         playerStats.totalPoints += player.points || 0;
         playerStats.totalBonusPoints += player.bonusPoints || 0;
         playerStats.totalPenaltyPoints += player.penaltyPoints || 0;
+        playerStats.totalLh += player.lh || 0;
+        playerStats.totalCi += player.ci || 0;
         playerStats.gamesPlayed += 1;
 
         // Обновляем статистику по ролям
@@ -111,7 +117,7 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
       <table className="w-full text-sm text-white border-collapse">
         <thead className="bg-[#1E1E1E]">
           <tr>
-            {["#", "Игрок", "Σ", "Σ+", "Σ-", "Игр", "Мафия", "Дон", "Шериф", "Доктор", "Маньяк", "Красотка", "Мирный"].map((col, i) => (
+            {["#", "Игрок", "Σ", "Σ+", "Σ-", "ЛХ", "Ci", "Игр", "Мафия", "Дон", "Шериф", "Доктор", "Маньяк", "Красотка", "Мирный"].map((col, i) => (
               <th key={i} className="border border-gray-700 px-2 py-2 whitespace-nowrap font-normal text-xs">{col}</th>
             ))}
           </tr>
@@ -134,6 +140,12 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 text-red-400">
                   {Number(player.totalPenaltyPoints.toFixed(1))}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-blue-400">
+                  {Number(player.totalLh.toFixed(1))}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 text-purple-400">
+                  {Number(player.totalCi.toFixed(1))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2">
                   {player.gamesPlayed}

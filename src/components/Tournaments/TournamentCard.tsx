@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, User, Trophy, MapPin } from 'lucide-react';
 import { Tournament } from '../../api/tournaments';
+import { API_URL } from '../../api/API_URL';
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -19,6 +20,29 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Функция для правильного формирования пути к логотипу
+  const getValidLogoPath = (logoPath: string | null | undefined) => {
+    if (!logoPath) return '/club-avatar-default.svg';
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (logoPath.startsWith('http')) {
+      return logoPath;
+    }
+    
+    // Если это путь к файлу аватара клуба, используем API endpoint
+    if (logoPath.includes('club-avatars') || logoPath.includes('avatar')) {
+      return `${API_URL}/files/club-avatars/${logoPath}`;
+    }
+    
+    // Если уже правильный путь, возвращаем как есть
+    if (logoPath.startsWith('/')) {
+      return logoPath;
+    }
+    
+    // Иначе добавляем ведущий слеш
+    return `/${logoPath}`;
   };
 
   const getStatusColor = (status?: string) => {
@@ -100,7 +124,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
               onClick={(e) => e.stopPropagation()}
             >
               <Image 
-                src={tournament.club.logo} 
+                src={getValidLogoPath(tournament.club.logo)} 
                 alt="Club logo" 
                 width={48} 
                 height={48} 
@@ -109,7 +133,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
             </Link>
           ) : tournament.clubLogo ? (
             <Image 
-              src={tournament.clubLogo} 
+              src={getValidLogoPath(tournament.clubLogo)} 
               alt="Club logo" 
               width={48} 
               height={48} 
@@ -120,10 +144,12 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
               <Trophy className="w-6 h-6 text-[#757575]" />
             </div>
           )}
-          <div className="flex items-center gap-1 bg-[#FFF3E0] rounded-[6px] px-2 py-1 text-xs text-[#FFB800] font-semibold">
-            <Image src="/star.png" alt="star" width={14} height={14} />
-            {tournament.gamesCount || 0}
-          </div>
+          {tournament.type === 'ELO' && tournament.stars && (
+            <div className="flex items-center gap-1 bg-[#FFF3E0] rounded-[6px] px-2 py-1 text-xs text-[#FFB800] font-semibold">
+              <Image src="/star.png" alt="star" width={14} height={14} />
+              {tournament.stars}
+            </div>
+          )}
           <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(tournament.status)}`}>
             {getStatusText(tournament.status)}
           </span>

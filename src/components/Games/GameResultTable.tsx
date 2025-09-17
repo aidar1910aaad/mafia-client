@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Award, Star } from 'lucide-react';
-import { Game } from '../../api/games';
+import { Game, GameResult } from '../../api/games';
 
 interface GameResultTableProps {
   game: Game;

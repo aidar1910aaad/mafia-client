@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Users, Trophy, Calendar } from 'lucide-react';
+import { Search, Users, Trophy } from 'lucide-react';
 
 interface TournamentFiltersProps {
   search: string;
@@ -12,8 +12,6 @@ interface TournamentFiltersProps {
   onSortByChange: (value: string) => void;
   sortOrder: string;
   onSortOrderChange: (value: string) => void;
-  dateFilter: string;
-  onDateFilterChange: (value: string) => void;
   typeFilter: string;
   onTypeFilterChange: (value: string) => void;
   ratingFilter: string;
@@ -29,8 +27,6 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
   onSortByChange,
   sortOrder,
   onSortOrderChange,
-  dateFilter,
-  onDateFilterChange,
   typeFilter,
   onTypeFilterChange,
   ratingFilter,
@@ -51,21 +47,6 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
           />
         </div>
 
-        {/* Date Filter */}
-        <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <select
-            value={dateFilter}
-            onChange={(e) => onDateFilterChange(e.target.value)}
-            className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
-          >
-            <option value="">Все</option>
-            <option value="30days">Ближайшие 30 дней</option>
-            <option value="3months">Ближайшие 3 месяца</option>
-            <option value="upcoming">Все запланированные</option>
-            <option value="completed">Состоявшиеся</option>
-          </select>
-        </div>
 
         {/* Type Filter */}
         <div className="flex items-center gap-2">

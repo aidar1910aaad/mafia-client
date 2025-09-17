@@ -25,7 +25,6 @@ export default function TournamentsPage() {
     status: '',
     sortBy: 'date',
     sortOrder: 'desc',
-    dateFilter: '',
     typeFilter: '',
     ratingFilter: ''
   });
@@ -70,9 +69,6 @@ export default function TournamentsPage() {
     setFilters(prev => ({ ...prev, sortOrder: value, page: 1 }));
   };
 
-  const handleDateFilterChange = (value: string) => {
-    setFilters(prev => ({ ...prev, dateFilter: value, page: 1 }));
-  };
 
   const handleTypeFilterChange = (value: string) => {
     setFilters(prev => ({ ...prev, typeFilter: value, page: 1 }));
@@ -131,8 +127,6 @@ export default function TournamentsPage() {
           onSortByChange={handleSortByChange}
           sortOrder={filters.sortOrder || 'desc'}
           onSortOrderChange={handleSortOrderChange}
-          dateFilter={filters.dateFilter || ''}
-          onDateFilterChange={handleDateFilterChange}
           typeFilter={filters.typeFilter || ''}
           onTypeFilterChange={handleTypeFilterChange}
           ratingFilter={filters.ratingFilter || ''}

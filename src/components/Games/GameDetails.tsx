@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { gamesAPI, Game } from '../../api/games';
+import { gamesAPI, Game, GameResult } from '../../api/games';
 import { usersAPI } from '../../api/users';
 import { Calendar, Users, Trophy, Target, Shield, User, Clock, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -56,26 +56,30 @@ export default function GameDetails({ gameId }: GameDetailsProps) {
     });
   };
 
-  const getResultColor = (result: string) => {
+  const getResultColor = (result?: GameResult | null) => {
+    if (!result) return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
+    
     switch (result) {
-      case 'MAFIA_WIN':
+      case GameResult.MAFIA_WIN:
         return 'text-red-400 bg-red-400/10 border-red-400/20';
-      case 'CITIZEN_WIN':
+      case GameResult.CITIZEN_WIN:
         return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'DRAW':
+      case GameResult.DRAW:
         return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
       default:
         return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
     }
   };
 
-  const getResultText = (result: string) => {
+  const getResultText = (result?: GameResult | null) => {
+    if (!result) return 'Не определен';
+    
     switch (result) {
-      case 'MAFIA_WIN':
+      case GameResult.MAFIA_WIN:
         return 'Победа мафии';
-      case 'CITIZEN_WIN':
+      case GameResult.CITIZEN_WIN:
         return 'Победа горожан';
-      case 'DRAW':
+      case GameResult.DRAW:
         return 'Ничья';
       default:
         return 'Неизвестно';

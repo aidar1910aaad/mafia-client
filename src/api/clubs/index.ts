@@ -26,6 +26,7 @@ export interface Club {
     city: string;
     socialMediaLink: string;
     status: string;
+    elo: number;
     createdAt: string;
     updatedAt: string;
     owner: User;
@@ -61,21 +62,28 @@ export const clubsAPI = {
     async getClubs(): Promise<Club[]> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/clubs`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
-                throw new Error('Ошибка получения клубов');
+                const errorData = await response.json().catch(() => ({}));
+                // Если ошибка Unauthorized и нет токена, возвращаем пустой массив для публичного доступа
+                if (response.status === 401 && !token) {
+                    return [];
+                }
+                throw new Error(errorData.message || 'Ошибка получения клубов');
             }
 
             return await response.json();
@@ -88,21 +96,27 @@ export const clubsAPI = {
     async getClubById(id: string | number): Promise<Club> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/clubs/${id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Если ошибка Unauthorized и нет токена, выбрасываем ошибку для публичного доступа
+                if (response.status === 401 && !token) {
+                    throw new Error('Для просмотра клуба необходимо авторизоваться');
+                }
                 throw new Error(errorData.message || `Ошибка получения клуба: ${response.status}`);
             }
 
@@ -274,6 +288,37 @@ export const clubsAPI = {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `Ошибка отклонения заявки: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    // Загрузка аватара клуба
+    async uploadClubAvatar(clubId: number, avatarFile: File): Promise<Club> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', avatarFile);
+
+            const response = await fetch(`${API_URL}/clubs/${clubId}/avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Ошибка загрузки аватара: ${response.status}`);
             }
 
             return await response.json();

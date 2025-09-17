@@ -5,6 +5,7 @@ import { GameFormProps } from './types';
 import PlayerSearch from './PlayerSearch';
 import PlayerList from './PlayerList';
 import ResultTable from './ResultTable';
+import { GameResult } from '../../../api/games';
 
 export default function GameForm({
   formData,
@@ -57,12 +58,14 @@ export default function GameForm({
           </label>
           <select
             value={formData.result}
-            onChange={(e) => setFormData({ ...formData, result: e.target.value as any })}
+            onChange={(e) => setFormData({ ...formData, result: e.target.value as GameResult | '' })}
             className="w-full bg-[#2A2A2A] border border-[#404040]/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+            required
           >
-            <option value="MAFIA_WIN">Победа мафии</option>
-            <option value="CITIZEN_WIN">Победа горожан</option>
-            <option value="DRAW">Ничья</option>
+            <option value="">Выберите результат</option>
+            <option value={GameResult.MAFIA_WIN}>Победа мафии</option>
+            <option value={GameResult.CITIZEN_WIN}>Победа горожан</option>
+            <option value={GameResult.DRAW}>Ничья</option>
           </select>
         </div>
       </div>

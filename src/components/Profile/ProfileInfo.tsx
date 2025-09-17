@@ -66,7 +66,7 @@ export default function ProfileInfo({ user }: ProfileInfoProps) {
                 <div className="flex items-center gap-2 text-gray-300">
                     <Shield className="w-4 h-4 text-blue-400" />
                     <span className="text-sm">
-                        {user.totalPoints || 0} очков
+                        {user.totalPoints ? (Number.isInteger(user.totalPoints) ? user.totalPoints.toString() : user.totalPoints.toFixed(1)) : 0} очков
                     </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">

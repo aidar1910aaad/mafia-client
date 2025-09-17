@@ -63,7 +63,9 @@ export default function ClubPage() {
     description: '',
     date: '',
     clubId: 0,
-    refereeId: 0
+    refereeId: 0,
+    type: 'DEFAULT',
+    stars: undefined
   });
 
   // Состояние для модального окна редактирования турнира
@@ -79,7 +81,9 @@ export default function ClubPage() {
     description: '',
     date: '',
     clubId: 0,
-    refereeId: 0
+    refereeId: 0,
+    type: 'DEFAULT',
+    stars: undefined
   });
 
   useEffect(() => {
@@ -96,6 +100,18 @@ export default function ClubPage() {
         // Получаем информацию о клубе
         if (typeof clubId === 'string') {
           const clubData = await clubsAPI.getClubById(clubId);
+          console.log('ClubPage: Данные клуба:', clubData);
+          console.log('ClubPage: Логотип клуба:', clubData.logo);
+          console.log('ClubPage: Владелец клуба:', clubData.owner);
+          console.log('ClubPage: Участники клуба:', clubData.members);
+          
+          // Проверим, есть ли полные URL в данных
+          if (clubData.logo && clubData.logo.startsWith('http')) {
+            console.log('ClubPage: Логотип уже полный URL:', clubData.logo);
+          }
+          if (clubData.owner.avatar && clubData.owner.avatar.startsWith('http')) {
+            console.log('ClubPage: Аватар владельца уже полный URL:', clubData.owner.avatar);
+          }
           setClub(clubData);
           
           // Получаем список всех пользователей для выбора судьи
@@ -121,6 +137,15 @@ export default function ClubPage() {
   const handleJoinSuccess = () => {
     setToast({ 
       message: 'Заявка на вступление в клуб отправлена успешно!', 
+      type: 'success', 
+      isVisible: true 
+    });
+  };
+
+  const handleAvatarUpdate = (updatedClub: Club) => {
+    setClub(updatedClub);
+    setToast({ 
+      message: 'Аватар клуба успешно обновлен!', 
       type: 'success', 
       isVisible: true 
     });
@@ -226,9 +251,11 @@ export default function ClubPage() {
 
   // Функции для работы с турнирами
   const handleTournamentInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
     setTournamentFormData({
       ...tournamentFormData,
-      [e.target.name]: e.target.value
+      [name]: name === 'stars' ? (value ? parseInt(value) : undefined) : value
     });
   };
 
@@ -287,6 +314,18 @@ export default function ClubPage() {
       return;
     }
 
+    // Валидация для ELO турниров
+    if (tournamentFormData.type === 'ELO') {
+      if (tournamentFormData.stars === undefined || tournamentFormData.stars < 1 || tournamentFormData.stars > 6) {
+        setToast({ 
+          message: 'Для ELO турнира необходимо указать количество звезд от 1 до 6', 
+          type: 'error', 
+          isVisible: true 
+        });
+        return;
+      }
+    }
+
     try {
       setCreatingTournament(true);
       await tournamentsAPI.createTournament({
@@ -301,7 +340,9 @@ export default function ClubPage() {
         description: '',
         date: '',
         clubId: 0,
-        refereeId: 0
+        refereeId: 0,
+        type: 'DEFAULT',
+        stars: undefined
       });
       setTournamentSearchQuery('');
       setTournamentSearchResults([]);
@@ -331,7 +372,9 @@ export default function ClubPage() {
       description: tournament.description,
       date: tournament.date.split('T')[0], // Убираем время из даты
       clubId: tournament.clubId,
-      refereeId: tournament.refereeId
+      refereeId: tournament.refereeId,
+      type: tournament.type || 'DEFAULT',
+      stars: tournament.stars
     });
     setEditTournamentSearchQuery(tournament.referee ? `${tournament.referee.nickname || tournament.referee.email}` : '');
     setShowEditTournamentModal(true);
@@ -383,7 +426,7 @@ export default function ClubPage() {
 
   return (
     <div className="min-h-screen bg-[#161616]">
-      <ClubBanner club={club} />
+      <ClubBanner club={club} currentUser={currentUser} onAvatarUpdate={handleAvatarUpdate} />
 
       {/* Content */}
       <div className="max-w-[1280px] mx-auto px-4 py-8">
@@ -641,6 +684,106 @@ export default function ClubPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Тип турнира *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setTournamentFormData({
+                      ...tournamentFormData,
+                      type: 'DEFAULT',
+                      stars: undefined
+                    })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      tournamentFormData.type === 'DEFAULT'
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                        : 'border-gray-600 bg-gray-700/50 text-gray-400 hover:border-gray-500 hover:bg-gray-600/50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">Обычный турнир</div>
+                      <div className="text-xs opacity-75 mt-1">Стандартные правила</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setTournamentFormData({
+                      ...tournamentFormData,
+                      type: 'ELO'
+                    })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      tournamentFormData.type === 'ELO'
+                        ? 'border-purple-500 bg-purple-500/10 text-purple-400'
+                        : 'border-gray-600 bg-gray-700/50 text-gray-400 hover:border-gray-500 hover:bg-gray-600/50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">ELO турнир</div>
+                      <div className="text-xs opacity-75 mt-1">Рейтинговый турнир</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {tournamentFormData.type === 'ELO' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Количество звезд *
+                  </label>
+                  <div className="flex justify-center space-x-2">
+                    {[1, 2, 3, 4, 5, 6].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setTournamentFormData({
+                          ...tournamentFormData,
+                          stars: star
+                        })}
+                        className={`group relative p-2 rounded-lg transition-all duration-200 ${
+                          tournamentFormData.stars === star
+                            ? 'bg-yellow-500/20 border-2 border-yellow-500'
+                            : 'bg-gray-700/50 border-2 border-gray-600 hover:border-yellow-400 hover:bg-yellow-500/10'
+                        }`}
+                      >
+                        <svg 
+                          className={`w-8 h-8 transition-all duration-200 ${
+                            tournamentFormData.stars === star
+                              ? 'text-yellow-400 scale-110'
+                              : 'text-gray-400 group-hover:text-yellow-300 group-hover:scale-105'
+                          }`}
+                          fill={tournamentFormData.stars && tournamentFormData.stars >= star ? 'currentColor' : 'none'}
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        <span className={`absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-medium transition-all duration-200 ${
+                          tournamentFormData.stars === star
+                            ? 'text-yellow-400 opacity-100'
+                            : 'text-gray-500 opacity-0 group-hover:opacity-100'
+                        }`}>
+                          {star}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                </div>
+              )}
+
+              <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Судья *
                 </label>
@@ -701,7 +844,9 @@ export default function ClubPage() {
                     description: '',
                     date: '',
                     clubId: 0,
-                    refereeId: 0
+                    refereeId: 0,
+                    type: 'DEFAULT',
+                    stars: undefined
                   });
                 }}
                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -765,6 +910,106 @@ export default function ClubPage() {
                   minDate={new Date().toISOString().split('T')[0]}
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Тип турнира *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditTournamentFormData({
+                      ...editTournamentFormData,
+                      type: 'DEFAULT',
+                      stars: undefined
+                    })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      editTournamentFormData.type === 'DEFAULT'
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                        : 'border-gray-600 bg-gray-700/50 text-gray-400 hover:border-gray-500 hover:bg-gray-600/50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">Обычный турнир</div>
+                      <div className="text-xs opacity-75 mt-1">Стандартные правила</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setEditTournamentFormData({
+                      ...editTournamentFormData,
+                      type: 'ELO'
+                    })}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
+                      editTournamentFormData.type === 'ELO'
+                        ? 'border-purple-500 bg-purple-500/10 text-purple-400'
+                        : 'border-gray-600 bg-gray-700/50 text-gray-400 hover:border-gray-500 hover:bg-gray-600/50'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </div>
+                      <div className="font-medium text-sm">ELO турнир</div>
+                      <div className="text-xs opacity-75 mt-1">Рейтинговый турнир</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {editTournamentFormData.type === 'ELO' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-3">
+                    Количество звезд *
+                  </label>
+                  <div className="flex justify-center space-x-2">
+                    {[1, 2, 3, 4, 5, 6].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setEditTournamentFormData({
+                          ...editTournamentFormData,
+                          stars: star
+                        })}
+                        className={`group relative p-2 rounded-lg transition-all duration-200 ${
+                          editTournamentFormData.stars === star
+                            ? 'bg-yellow-500/20 border-2 border-yellow-500'
+                            : 'bg-gray-700/50 border-2 border-gray-600 hover:border-yellow-400 hover:bg-yellow-500/10'
+                        }`}
+                      >
+                        <svg 
+                          className={`w-8 h-8 transition-all duration-200 ${
+                            editTournamentFormData.stars === star
+                              ? 'text-yellow-400 scale-110'
+                              : 'text-gray-400 group-hover:text-yellow-300 group-hover:scale-105'
+                          }`}
+                          fill={editTournamentFormData.stars && editTournamentFormData.stars >= star ? 'currentColor' : 'none'}
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                        <span className={`absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-medium transition-all duration-200 ${
+                          editTournamentFormData.stars === star
+                            ? 'text-yellow-400 opacity-100'
+                            : 'text-gray-500 opacity-0 group-hover:opacity-100'
+                        }`}>
+                          {star}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">

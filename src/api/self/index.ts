@@ -1,11 +1,29 @@
 import { API_URL } from '../API_URL';
 
+export interface RoleStat {
+    id: number;
+    role: string;
+    gamesPlayed: number;
+    gamesWon: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface UserProfile {
     id: number;
     email: string;
     nickname: string;
-    avatar: string;
+    avatar: string | null;
     role: string;
+    confirmed: boolean;
+    totalGames: number;
+    totalWins: number;
+    totalPoints: number;
+    eloRating: number;
+    totalBonusPoints: number;
+    roleStats: RoleStat[];
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface UpdateProfileData {

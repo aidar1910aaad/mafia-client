@@ -54,15 +54,15 @@ const PlayerPagination: React.FC<PlayerPaginationProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="flex items-center justify-center gap-1 sm:gap-2 mt-6 sm:mt-8">
       {/* Previous Button */}
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-1 px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-1 px-2 sm:px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
       >
         <ChevronLeft className="w-4 h-4" />
-        Назад
+        <span className="hidden sm:inline">Назад</span>
       </button>
 
       {/* Page Numbers */}
@@ -70,11 +70,11 @@ const PlayerPagination: React.FC<PlayerPaginationProps> = ({
         {getPageNumbers().map((page, index) => (
           <React.Fragment key={index}>
             {page === '...' ? (
-              <span className="px-3 py-2 text-gray-400">...</span>
+              <span className="px-2 sm:px-3 py-2 text-gray-400 text-sm">...</span>
             ) : (
               <button
                 onClick={() => onPageChange(page as number)}
-                className={`px-3 py-2 rounded-lg transition-colors ${
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors text-sm ${
                   currentPage === page
                     ? 'bg-[#8469EF] text-white'
                     : 'bg-[#1D1D1D] border border-[#404040] text-white hover:border-[#8469EF]'
@@ -91,9 +91,9 @@ const PlayerPagination: React.FC<PlayerPaginationProps> = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1 px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-1 px-2 sm:px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white hover:border-[#8469EF] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
       >
-        Вперед
+        <span className="hidden sm:inline">Вперед</span>
         <ChevronRight className="w-4 h-4" />
       </button>
     </div>

@@ -24,10 +24,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {children}
-      </body>
-    </html>
+    <div className="min-h-screen">
+      {children}
+    </div>
   );
 } 

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Loader2, Trophy, Target, Shield, Crown } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
 import { usersAPI, Player, PlayersResponse, PlayersFilters } from '../../api/users';
 import PlayerCard from '../../components/Players/PlayerCard';
 import PlayerFilters from '../../components/Players/PlayerFilters';
@@ -23,7 +23,7 @@ export default function PlayersPage() {
     search: '',
     role: '',
     sortBy: 'nickname',
-    sortOrder: 'asc'
+    sortOrder: 'desc'
   });
 
   const fetchPlayers = async () => {
@@ -70,17 +70,11 @@ export default function PlayersPage() {
     setFilters(prev => ({ ...prev, page }));
   };
 
-  // Calculate overall statistics
-  const totalGames = players.reduce((sum, player) => sum + player.totalGames, 0);
-  const totalWins = players.reduce((sum, player) => sum + player.totalWins, 0);
-  const totalKills = players.reduce((sum, player) => sum + player.totalKills, 0);
-  const totalDeaths = players.reduce((sum, player) => sum + player.totalDeaths, 0);
-  const totalPoints = players.reduce((sum, player) => sum + player.totalPoints, 0);
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#161616] flex justify-center items-start py-8 px-4">
-        <div className="w-full max-w-[1080px] rounded-[18px] bg-[#1D1D1D] border border-[#353535] p-6">
+      <div className="min-h-screen bg-[#161616] flex justify-center items-start py-4 sm:py-8 px-2 sm:px-4">
+        <div className="w-full max-w-[1080px] rounded-[18px] bg-[#1D1D1D] border border-[#353535] p-4 sm:p-6">
           <div className="text-center">
             <div className="text-red-400 text-lg mb-4">Ошибка загрузки игроков</div>
             <div className="text-gray-400 mb-4">{error}</div>
@@ -97,13 +91,13 @@ export default function PlayersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#161616] flex justify-center items-start py-8 px-4">
-      <div className="w-full max-w-[1080px] rounded-[18px] bg-[#1D1D1D] border border-[#353535] p-6">
+    <div className="min-h-screen bg-[#161616] flex justify-center items-start py-4 sm:py-8 px-2 sm:px-4">
+      <div className="w-full max-w-[1080px] rounded-[18px] bg-[#1D1D1D] border border-[#353535] p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           <div className="flex items-center gap-2">
-            <Users className="w-8 h-8 text-[#8469EF]" />
-            <h1 className="text-2xl font-bold text-white">Игроки</h1>
+            <Users className="w-6 h-6 sm:w-8 sm:h-8 text-[#8469EF]" />
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Игроки</h1>
           </div>
           {total > 0 && (
             <span className="text-gray-400 text-sm">
@@ -112,46 +106,6 @@ export default function PlayersPage() {
           )}
         </div>
 
-        {/* Statistics */}
-        {!loading && players.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Trophy className="w-4 h-4 text-yellow-400" />
-                <span className="text-white font-semibold">{totalGames}</span>
-              </div>
-              <div className="text-gray-400 text-xs">Всего игр</div>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Crown className="w-4 h-4 text-yellow-400" />
-                <span className="text-white font-semibold">{totalWins}</span>
-              </div>
-              <div className="text-gray-400 text-xs">Всего побед</div>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-red-400" />
-                <span className="text-white font-semibold">{totalKills}</span>
-              </div>
-              <div className="text-gray-400 text-xs">Всего убийств</div>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Shield className="w-4 h-4 text-blue-400" />
-                <span className="text-white font-semibold">{totalDeaths}</span>
-              </div>
-              <div className="text-gray-400 text-xs">Всего смертей</div>
-            </div>
-            <div className="bg-[#2A2A2A] rounded-lg p-3 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <Trophy className="w-4 h-4 text-[#FFB800]" />
-                <span className="text-white font-semibold">{totalPoints}</span>
-              </div>
-              <div className="text-gray-400 text-xs">Всего очков</div>
-            </div>
-          </div>
-        )}
 
         {/* Filters */}
         <PlayerFilters
@@ -161,7 +115,7 @@ export default function PlayersPage() {
           onRoleChange={handleRoleChange}
           sortBy={filters.sortBy || 'nickname'}
           onSortByChange={handleSortByChange}
-          sortOrder={filters.sortOrder || 'asc'}
+          sortOrder={filters.sortOrder || 'desc'}
           onSortOrderChange={handleSortOrderChange}
         />
 

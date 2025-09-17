@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { UserProfile } from '../../api/auth';
 import { Calendar, MapPin, Users, ExternalLink, Crown, User, Building2, Trophy } from 'lucide-react';
+import { API_URL } from '../../api/API_URL';
 
 interface UserClubProps {
     userId: number;
@@ -17,6 +18,29 @@ export default function UserClub({ userId, user }: UserClubProps) {
             setClub(user.club);
         }
     }, [user]);
+
+    // Функция для правильного формирования пути к логотипу
+    const getValidLogoPath = (logoPath: string | null | undefined) => {
+        if (!logoPath) return null;
+        
+        // Если это уже полный URL, возвращаем как есть
+        if (logoPath.startsWith('http')) {
+            return logoPath;
+        }
+        
+    // Если это путь к файлу аватара клуба, используем API endpoint
+    if (logoPath.includes('club-avatars') || logoPath.includes('avatar')) {
+      return `${API_URL}/files/club-avatars/${logoPath}`;
+    }
+        
+        // Если уже правильный путь, возвращаем как есть
+        if (logoPath.startsWith('/')) {
+            return logoPath;
+        }
+        
+        // Иначе добавляем ведущий слеш
+        return `/${logoPath}`;
+    };
 
     if (!club) {
         return null;
@@ -89,11 +113,11 @@ export default function UserClub({ userId, user }: UserClubProps) {
             <div className="p-6">
                 {/* Название и логотип */}
                 <div className="flex items-start gap-6 mb-6">
-                    {club.logo && (
+                    {club.logo && getValidLogoPath(club.logo) && (
                         <div className="relative">
                             <a href={`/clubs/${club.id}`} className="block group">
                                 <img 
-                                    src={club.logo} 
+                                    src={getValidLogoPath(club.logo)!} 
                                     alt={club.name}
                                     className="w-20 h-20 rounded-2xl object-cover border-2 border-[#404040]/50 shadow-lg group-hover:border-blue-500/50 transition-all duration-200 group-hover:scale-105"
                                 />

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, MapPin, Users, Trophy, Clock, User } from 'lucide-react';
 import { Season } from '../../api/seasons';
+import { API_URL } from '../../api/API_URL';
 
 interface SeasonCardProps {
   season: Season;
@@ -17,6 +18,29 @@ const SeasonCard: React.FC<SeasonCardProps> = ({ season }) => {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  // Функция для правильного формирования пути к логотипу
+  const getValidLogoPath = (logoPath: string | null | undefined) => {
+    if (!logoPath) return null;
+    
+    // Если это уже полный URL, возвращаем как есть
+    if (logoPath.startsWith('http')) {
+      return logoPath;
+    }
+    
+    // Если это путь к файлу аватара клуба, используем API endpoint
+    if (logoPath.includes('club-avatars') || logoPath.includes('avatar')) {
+      return `${API_URL}/files/club-avatars/${logoPath}`;
+    }
+    
+    // Если уже правильный путь, возвращаем как есть
+    if (logoPath.startsWith('/')) {
+      return logoPath;
+    }
+    
+    // Иначе добавляем ведущий слеш
+    return `/${logoPath}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -97,7 +121,7 @@ const SeasonCard: React.FC<SeasonCardProps> = ({ season }) => {
               onClick={(e) => e.stopPropagation()}
             >
               <Image 
-                src={season.club.logo} 
+                src={getValidLogoPath(season.club.logo)!} 
                 alt="Club logo" 
                 width={48} 
                 height={48} 

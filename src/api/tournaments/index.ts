@@ -8,6 +8,8 @@ export interface Tournament {
     clubId?: number;
     refereeId: number;
     status?: string;
+    type?: 'DEFAULT' | 'ELO';
+    stars?: number;
     createdAt?: string;
     updatedAt?: string;
     clubName?: string;
@@ -70,6 +72,8 @@ export interface CreateTournamentRequest {
     date: string;
     clubId: number;
     refereeId: number;
+    type: 'DEFAULT' | 'ELO';
+    stars?: number;
 }
 
 export interface UpdateTournamentRequest {
@@ -78,6 +82,8 @@ export interface UpdateTournamentRequest {
     date?: string;
     clubId?: number;
     refereeId?: number;
+    type?: 'DEFAULT' | 'ELO';
+    stars?: number;
 }
 
 export interface TournamentsFilters {
@@ -89,7 +95,6 @@ export interface TournamentsFilters {
     refereeId?: number;
     sortBy?: string;
     sortOrder?: string;
-    dateFilter?: string;
     typeFilter?: string;
     ratingFilter?: string;
 }
@@ -109,6 +114,21 @@ export const tournamentsAPI = {
                 throw new Error('Токен не найден');
             }
 
+            // Подготавливаем данные для отправки
+            const requestData: any = {
+                name: data.name,
+                description: data.description,
+                date: data.date,
+                clubId: data.clubId,
+                refereeId: data.refereeId,
+                type: data.type
+            };
+
+            // Добавляем stars только для ELO турниров
+            if (data.type === 'ELO' && data.stars !== undefined) {
+                requestData.stars = data.stars;
+            }
+
             const response = await fetch(`${API_URL}/tournaments`, {
                 method: 'POST',
                 headers: {
@@ -116,7 +136,7 @@ export const tournamentsAPI = {
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify(requestData),
             });
 
             if (!response.ok) {
@@ -134,17 +154,19 @@ export const tournamentsAPI = {
     async getClubTournaments(clubId: number): Promise<TournamentsResponse> {
         try {
             const token = localStorage.getItem('authToken');
+
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
             
-            if (!token) {
-                throw new Error('Токен не найден');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
 
             const response = await fetch(`${API_URL}/tournaments?clubId=${clubId}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
@@ -162,20 +184,22 @@ export const tournamentsAPI = {
     async getTournamentById(id: number): Promise<Tournament> {
         try {
             const token = localStorage.getItem('authToken');
-            
-            if (!token) {
-                throw new Error('Токен не найден');
-            }
 
             console.log(`Запрашиваем турнир с ID: ${id}`);
             console.log(`URL: ${API_URL}/tournaments/${id}`);
 
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/tournaments/${id}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             console.log('Статус ответа:', response.status);
@@ -240,10 +264,6 @@ export const tournamentsAPI = {
     async getAllTournaments(filters: TournamentsFilters = {}): Promise<TournamentsResponse> {
         try {
             const token = localStorage.getItem('authToken');
-            
-            if (!token) {
-                throw new Error('Токен не найден');
-            }
 
             // Build query parameters
             const params = new URLSearchParams();
@@ -255,16 +275,22 @@ export const tournamentsAPI = {
             if (filters.refereeId) params.append('refereeId', filters.refereeId.toString());
             if (filters.sortBy) params.append('sortBy', filters.sortBy);
             if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
-            if (filters.dateFilter) params.append('dateFilter', filters.dateFilter);
+            // dateFilter removed - server doesn't support this parameter
             if (filters.typeFilter) params.append('typeFilter', filters.typeFilter);
             if (filters.ratingFilter) params.append('ratingFilter', filters.ratingFilter);
 
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/tournaments?${params.toString()}`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             if (!response.ok) {
@@ -338,20 +364,22 @@ export const tournamentsAPI = {
     async getTournamentParticipants(tournamentId: number): Promise<TournamentParticipant[]> {
         try {
             const token = localStorage.getItem('authToken');
-            
-            if (!token) {
-                throw new Error('Токен не найден');
-            }
 
             console.log(`Запрашиваем участников турнира ${tournamentId}`);
             console.log(`URL: ${API_URL}/tournaments/${tournamentId}/participants`);
 
+            // Prepare headers - include authorization only if token exists
+            const headers: Record<string, string> = {
+                'Accept': 'application/json',
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${API_URL}/tournaments/${tournamentId}/participants`, {
                 method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
+                headers,
             });
 
             console.log('Статус ответа участников:', response.status);
@@ -407,6 +435,104 @@ export const tournamentsAPI = {
 
             return await response.json();
         } catch (error) {
+            throw error;
+        }
+    },
+
+    // Завершение турнира
+    async completeTournament(tournamentId: number): Promise<Tournament> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен не найден');
+            }
+
+            console.log(`Завершаем турнир ${tournamentId}`);
+            console.log(`URL: ${API_URL}/tournaments/${tournamentId}/complete`);
+
+            const response = await fetch(`${API_URL}/tournaments/${tournamentId}/complete`, {
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            console.log('Статус ответа завершения турнира:', response.status);
+
+            if (!response.ok) {
+                let errorMessage = `Ошибка завершения турнира: ${response.status}`;
+                
+                try {
+                    const errorData = await response.json();
+                    console.error('Детали ошибки завершения турнира:', errorData);
+                    errorMessage = errorData.message || errorData.error || errorMessage;
+                } catch (parseError) {
+                    console.error('Не удалось распарсить ответ ошибки завершения турнира:', parseError);
+                    const errorText = await response.text();
+                    console.error('Текст ответа завершения турнира:', errorText);
+                }
+                
+                throw new Error(errorMessage);
+            }
+
+            const result = await response.json();
+            console.log('Турнир успешно завершен:', result);
+            return result;
+        } catch (error) {
+            console.error('Полная ошибка завершения турнира:', error);
+            throw error;
+        }
+    },
+
+    // Удаление турнира
+    async deleteTournament(tournamentId: number): Promise<void> {
+        try {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
+            }
+
+            const response = await fetch(`${API_URL}/tournaments/${tournamentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                let errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+                
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    }
+                } catch (parseError) {
+                    // Если не удалось распарсить JSON, используем стандартное сообщение
+                    if (response.status === 500) {
+                        errorMessage = 'Внутренняя ошибка сервера. Попробуйте позже или обратитесь к администратору.';
+                    } else if (response.status === 403) {
+                        errorMessage = 'Недостаточно прав для удаления турнира.';
+                    } else if (response.status === 404) {
+                        errorMessage = 'Турнир не найден.';
+                    } else if (response.status === 401) {
+                        errorMessage = 'Сессия истекла. Пожалуйста, войдите в систему заново.';
+                    }
+                }
+                
+                throw new Error(errorMessage);
+            }
+        } catch (error) {
+            // Если это ошибка сети
+            if (error instanceof TypeError && error.message.includes('fetch')) {
+                throw new Error('Ошибка сети. Проверьте подключение к интернету.');
+            }
             throw error;
         }
     },

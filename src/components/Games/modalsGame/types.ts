@@ -1,4 +1,4 @@
-import { GamePlayer } from '../../../api/games';
+import { GamePlayer, GameResult } from '../../../api/games';
 
 export interface CreateGameModalProps {
   isOpen: boolean;
@@ -38,7 +38,7 @@ export interface GameFormData {
   name: string;
   description: string;
   scheduledDate: string;
-  result: 'MAFIA_WIN' | 'CITIZEN_WIN' | 'DRAW';
+  result: GameResult | '';
   resultTable: Record<string, string>;
 }
 

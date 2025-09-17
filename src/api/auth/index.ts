@@ -48,12 +48,12 @@ export interface UserProfile {
     totalGames: number;
     totalWins: number;
     totalPoints: number;
-    totalKills: number;
-    totalDeaths: number;
-    mafiaGames: number;
-    mafiaWins: number;
-    citizenGames: number;
-    citizenWins: number;
+    totalKills?: number;
+    totalDeaths?: number;
+    mafiaGames?: number;
+    mafiaWins?: number;
+    citizenGames?: number;
+    citizenWins?: number;
     createdAt: string;
     updatedAt: string;
 }

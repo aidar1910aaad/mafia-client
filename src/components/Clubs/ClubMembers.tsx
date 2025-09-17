@@ -1,8 +1,66 @@
 import { Club } from '../../api/clubs';
+import { API_URL } from '../../api/API_URL';
 
 interface ClubMembersProps {
   club: Club;
 }
+
+interface MemberAvatarProps {
+  member: {
+    id: number;
+    nickname: string;
+    avatar?: string;
+  };
+}
+
+const MemberAvatar = ({ member }: MemberAvatarProps) => {
+  // Функция для правильного формирования пути к аватару (как на странице списка игроков)
+  const getValidAvatarPath = (avatarPath: string | null | undefined) => {
+    if (!avatarPath) return null;
+    
+    // Если это уже полный URL, используем как есть
+    if (avatarPath.startsWith('http')) {
+      return avatarPath;
+    }
+    // Если это путь к файлу аватара пользователя, используем API endpoint
+    else if (avatarPath.includes('user-avatars') || avatarPath.includes('avatar')) {
+      return `${API_URL}/files/avatars/${avatarPath}`;
+    }
+    // Если уже правильный путь, используем как есть
+    else if (avatarPath.startsWith('/')) {
+      return avatarPath;
+    }
+    // Иначе добавляем ведущий слеш
+    else {
+      return `/${avatarPath}`;
+    }
+  };
+
+  return (
+    <div className="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center">
+      {member.avatar ? (
+        <img 
+          src={getValidAvatarPath(member.avatar) || ''} 
+          alt={member.nickname} 
+          className="w-8 h-8 rounded-full object-cover" 
+          onError={(e) => {
+            // Fallback to initials if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = `<span class="text-white text-sm font-medium">${member.nickname.charAt(0).toUpperCase()}</span>`;
+            }
+          }}
+        />
+      ) : (
+        <span className="text-white text-sm font-medium">
+          {member.nickname.charAt(0).toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+};
 
 export default function ClubMembers({ club }: ClubMembersProps) {
   return (
@@ -11,15 +69,7 @@ export default function ClubMembers({ club }: ClubMembersProps) {
       <div className="space-y-3">
         {club.members.slice(0, 5).map((member) => (
           <div key={member.id} className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full flex items-center justify-center">
-              {member.avatar ? (
-                <img src={member.avatar} alt={member.nickname} className="w-8 h-8 rounded-full object-cover" />
-              ) : (
-                <span className="text-white text-sm font-medium">
-                  {member.nickname.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+            <MemberAvatar member={member} />
             <div className="flex-1">
               <div className="text-white text-sm font-medium">{member.nickname}</div>
               <div className="text-[#A1A1A1] text-xs">Участник</div>

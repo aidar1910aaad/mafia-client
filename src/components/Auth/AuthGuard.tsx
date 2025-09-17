@@ -90,7 +90,7 @@ export default function AuthGuard({ children, requireAuth = true, requireAdmin =
                 router.push('/auth');
                 return;
             } else if (requireAdmin && !isAdmin) {
-                router.push('/dashboard');
+                router.push('/tournaments');
                 return;
             } else if (!requireAdmin && isAdmin) {
                 // Если это админ, но он пытается зайти на обычную страницу - перенаправляем в админ панель

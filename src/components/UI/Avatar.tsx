@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAvatarBlob } from '../../utils/imageUtils';
+import { API_URL } from '../../api/API_URL';
+// No longer need getAvatarBlob or checkAvatarExists
 
 interface AvatarProps {
     avatar: string | null | undefined;
@@ -22,6 +23,28 @@ export default function Avatar({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
 
+    // Функция для правильного формирования пути к аватару (как на странице списка игроков)
+    const getValidAvatarPath = (avatarPath: string | null | undefined) => {
+        if (!avatarPath) return null;
+        
+        // Если это уже полный URL, используем как есть
+        if (avatarPath.startsWith('http')) {
+            return avatarPath;
+        }
+        // Если это путь к файлу аватара пользователя, используем API endpoint
+        else if (avatarPath.includes('user-avatars') || avatarPath.includes('avatar')) {
+            return `${API_URL}/files/avatars/${avatarPath}`;
+        }
+        // Если уже правильный путь, используем как есть
+        else if (avatarPath.startsWith('/')) {
+            return avatarPath;
+        }
+        // Иначе добавляем ведущий слеш
+        else {
+            return `/${avatarPath}`;
+        }
+    };
+
     const sizeClasses = {
         sm: 'w-8 h-8 text-xs',
         md: 'w-12 h-12 text-sm',
@@ -33,6 +56,7 @@ export default function Avatar({
         if (!avatar) {
             setImageUrl(null);
             setError(false);
+            setLoading(false);
             return;
         }
 
@@ -40,24 +64,23 @@ export default function Avatar({
         if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
             setImageUrl(avatar);
             setError(false);
+            setLoading(false);
             return;
         }
 
-        // For all avatar filenames, use blob method with authorization
+        // Use static resource directly to avoid 404 errors
         setLoading(true);
         setError(false);
         
-        getAvatarBlob(avatar)
-            .then((url) => {
-                setImageUrl(url);
-                setError(!url);
-            })
-            .catch(() => {
-                setError(true);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        const staticUrl = getValidAvatarPath(avatar);
+        if (staticUrl) {
+            setImageUrl(staticUrl);
+            setError(false);
+        } else {
+            setImageUrl(null);
+            setError(true);
+        }
+        setLoading(false);
     }, [avatar]);
 
     // Cleanup blob URL on unmount
@@ -75,7 +98,7 @@ export default function Avatar({
     };
 
     return (
-        <div className={`${sizeClasses[size]} bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden ${className}`}>
+        <div className={`${sizeClasses[size]} bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold overflow-hidden shadow-lg ${className}`}>
             {loading ? (
                 <div className="animate-spin rounded-full border-b-2 border-white w-1/2 h-1/2"></div>
             ) : imageUrl && !error ? (
@@ -87,7 +110,11 @@ export default function Avatar({
                     crossOrigin="anonymous"
                 />
             ) : (
-                fallback.charAt(0).toUpperCase()
+                <div className="flex items-center justify-center w-full h-full">
+                    <span className="text-white font-bold select-none">
+                        {fallback.charAt(0).toUpperCase()}
+                    </span>
+                </div>
             )}
         </div>
     );

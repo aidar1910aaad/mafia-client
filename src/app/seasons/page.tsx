@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Calendar, Loader2 } from 'lucide-react';
 import { seasonsAPI, Season, SeasonsResponse, SeasonsFilters } from '../../api/seasons';
 import SeasonCard from '../../components/Seasons/SeasonCard';
@@ -76,12 +77,26 @@ export default function SeasonsPage() {
           <div className="text-center">
             <div className="text-red-400 text-lg mb-4">Ошибка загрузки сезонов</div>
             <div className="text-gray-400 mb-4">{error}</div>
-            <button
-              onClick={fetchSeasons}
-              className="px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
-            >
-              Попробовать снова
-            </button>
+            {error.includes('необходимо авторизоваться') ? (
+              <div className="mt-4">
+                <p className="text-gray-400 mb-4">
+                  Для просмотра сезонов необходимо войти в систему
+                </p>
+                <Link 
+                  href="/auth"
+                  className="px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
+                >
+                  Войти в систему
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={fetchSeasons}
+                className="px-4 py-2 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors"
+              >
+                Попробовать снова
+              </button>
+            )}
           </div>
         </div>
       </div>
