@@ -11,6 +11,7 @@ import AdminTable from '../Common/AdminTable';
 import AnimatedTableRow from '../Common/AnimatedTableRow';
 import { useAdminTable } from '../../../hooks/useAdminTable';
 import EditUserModal from '../Common/EditUserModal';
+import DeleteUserModal from '../Common/DeleteUserModal';
 
 interface UsersTabProps {
   message: { text: string; type: 'success' | 'error' } | null;
@@ -22,6 +23,9 @@ export default function UsersTab({ message }: UsersTabProps) {
   const [totalUsers, setTotalUsers] = useState(0);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     state,
@@ -92,6 +96,36 @@ export default function UsersTab({ message }: UsersTabProps) {
     } catch (error) {
       throw error;
     }
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setDeletingUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletingUser) return;
+
+    try {
+      setIsDeleting(true);
+      await adminAPI.deleteUser(deletingUser.id.toString());
+      // Обновляем локальное состояние - удаляем пользователя из списка
+      setUsers(prev => prev.filter(user => user.id !== deletingUser.id));
+      setTotalUsers(prev => prev - 1);
+      setShowDeleteModal(false);
+      setDeletingUser(null);
+    } catch (error) {
+      console.error('Ошибка при удалении пользователя:', error);
+      // Можно добавить toast уведомление здесь
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeletingUser(null);
+    setIsDeleting(false);
   };
 
   const fetchUsers = async () => {
@@ -331,7 +365,11 @@ export default function UsersTab({ message }: UsersTabProps) {
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
-                        <button className="text-[#A1A1A1] hover:text-red-400 transition-all duration-200 p-1.5 rounded-lg hover:bg-[#1D1D1D]/50 hover:scale-105" title="Удалить">
+                        <button 
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-[#A1A1A1] hover:text-red-400 transition-all duration-200 p-1.5 rounded-lg hover:bg-[#1D1D1D]/50 hover:scale-105" 
+                          title="Удалить"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -371,6 +409,15 @@ export default function UsersTab({ message }: UsersTabProps) {
           onSave={handleSaveUser}
         />
       )}
+
+      {/* Delete User Modal */}
+      <DeleteUserModal
+        isOpen={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        userName={deletingUser?.nickname || ''}
+        isLoading={isDeleting}
+      />
     </div>
   );
 } 

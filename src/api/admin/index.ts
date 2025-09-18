@@ -252,114 +252,54 @@ export const adminAPI = {
     }
   },
 
-  // Редактировать пользователя
-  updateUser: async (userId: string, userData: { email?: string; nickname?: string }): Promise<AdminAPIResponse> => {
+  // Удалить пользователя
+  deleteUser: async (userId: string): Promise<AdminAPIResponse> => {
     try {
       const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
       }
 
-      const response = await fetch(`${API_URL}/admin/users/${userId}/profile`, {
-        method: 'PUT',
+      const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
+        let errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // Если не удалось распарсить JSON, используем стандартное сообщение
+          if (response.status === 500) {
+            errorMessage = 'Внутренняя ошибка сервера. Попробуйте позже или обратитесь к администратору.';
+          } else if (response.status === 403) {
+            errorMessage = 'Недостаточно прав для удаления пользователя.';
+          } else if (response.status === 404) {
+            errorMessage = 'Пользователь не найден.';
+          } else if (response.status === 401) {
+            errorMessage = 'Сессия истекла. Пожалуйста, войдите в систему заново.';
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return { success: true };
     } catch (error) {
-      throw error;
-    }
-  },
-
-  // Редактировать турнир
-  updateTournament: async (tournamentId: string, tournamentData: { name?: string; description?: string }): Promise<AdminAPIResponse> => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
+      // Если это ошибка сети
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Ошибка сети. Проверьте подключение к интернету.');
       }
-
-      const response = await fetch(`${API_URL}/tournaments/${tournamentId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(tournamentData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
-      }
-
-      return { success: true };
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Редактировать клуб
-  updateClub: async (clubId: string, clubData: { name?: string; description?: string; city?: string }): Promise<AdminAPIResponse> => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
-      }
-
-      const response = await fetch(`${API_URL}/clubs/${clubId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(clubData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
-      }
-
-      return { success: true };
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Редактировать сезон
-  updateSeason: async (seasonId: string, seasonData: { name?: string; description?: string }): Promise<AdminAPIResponse> => {
-    try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
-      }
-
-      const response = await fetch(`${API_URL}/seasons/${seasonId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(seasonData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
-      }
-
-      return { success: true };
-    } catch (error) {
       throw error;
     }
   },
