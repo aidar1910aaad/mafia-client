@@ -116,20 +116,10 @@ export default function RatingsPage() {
                     <p className="text-gray-300 text-sm">6 звезд = максимальная сложность, 1 звезда = базовая сложность</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-gradient-to-br from-[#6B4FFF] to-[#8469EF] rounded-full flex items-center justify-center text-xs font-bold text-white mt-0.5">6</div>
-                  <div>
-                    <p className="text-white font-semibold mb-1">Специальные значения</p>
-                    <p className="text-gray-300 text-sm">"3к" означает 3000 очков</p>
-                  </div>
-                </div>
+                
               </div>
             </div>
-            <div className="mt-6 p-4 bg-gradient-to-r from-[#8469EF]/10 to-[#6B4FFF]/10 rounded-lg border border-[#8469EF]/20">
-              <p className="text-yellow-400 font-semibold text-center">
-                💡 "3к" означает 3000 очков
-              </p>
-            </div>
+            
           </div>
         </div>
       </div>
