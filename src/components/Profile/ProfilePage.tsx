@@ -168,13 +168,6 @@ export default function ProfilePage() {
                                 <h3 className="text-white font-semibold mb-2">Рейтинг ELO</h3>
                                 <p className="text-white text-lg">{formatNumber(user?.eloRating)}</p>
                             </div>
-
-                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2">Статус аккаунта</h3>
-                                <p className="text-white text-sm">
-                                    {user?.confirmed ? 'Подтвержден' : 'Не подтвержден'}
-                                </p>
-                            </div>
                         </div>
                     </div>
 

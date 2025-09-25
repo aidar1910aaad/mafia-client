@@ -75,7 +75,6 @@ const ClubRow: React.FC<ClubRowProps> = ({ place, logo, name, city, points, elo,
             <div className="text-xs text-[#C7C7C7]">{city}</div>
           </div>
         </div>
-        <div className="text-[20px] text-white font-semibold w-[80px] text-center flex justify-center">{points}</div>
         <div className="flex items-center gap-2 w-[100px] justify-end">
           <svg width="21" height="44" viewBox="0 0 21 44" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M19.0927 25.0487L13.5568 19.4692C13.163 19.0722 13.0585 18.4703 13.2954 17.9626L20.5537 2.41692C21.1792 1.07748 19.4922 -0.134403 18.4278 0.889325L0.475204 18.1527C-0.0519074 18.6597 -0.0743018 19.4973 0.425344 20.0301L5.53475 25.4821C5.87699 25.8472 5.9861 26.3741 5.81717 26.846L0.660301 41.2624C0.184876 42.5919 1.82365 43.6527 2.83734 42.6713L19.0724 26.9506C19.6071 26.4329 19.6163 25.5768 19.0926 25.0491L19.0927 25.0487Z" fill={eloColor}/>
@@ -108,11 +107,7 @@ const ClubRow: React.FC<ClubRowProps> = ({ place, logo, name, city, points, elo,
             <div className="text-xs text-[#C7C7C7] mb-2">{city}</div>
             
             {/* Mobile Stats */}
-            <div className="flex items-center justify-between">
-              <div className="text-center">
-                <div className="text-white font-semibold text-sm">{points}</div>
-                <div className="text-gray-400 text-xs">Баллы</div>
-              </div>
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-1">
                 <svg width="16" height="32" viewBox="0 0 21 44" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M19.0927 25.0487L13.5568 19.4692C13.163 19.0722 13.0585 18.4703 13.2954 17.9626L20.5537 2.41692C21.1792 1.07748 19.4922 -0.134403 18.4278 0.889325L0.475204 18.1527C-0.0519074 18.6597 -0.0743018 19.4973 0.425344 20.0301L5.53475 25.4821C5.87699 25.8472 5.9861 26.3741 5.81717 26.846L0.660301 41.2624C0.184876 42.5919 1.82365 43.6527 2.83734 42.6713L19.0724 26.9506C19.6071 26.4329 19.6163 25.5768 19.0926 25.0491L19.0927 25.0487Z" fill={eloColor}/>

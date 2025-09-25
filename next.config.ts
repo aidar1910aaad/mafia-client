@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.mafspace.ru',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   typescript: {

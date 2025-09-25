@@ -109,12 +109,12 @@ export default function TournamentDetails({ tournament, currentUser }: Tournamen
   const handleCompleteTournament = async () => {
     if (!tournament || !currentUser) return;
 
-    // Проверяем права доступа (аналогично проверке в GamesTable)
+    // Проверяем права доступа - только судья турнира, владелец клуба турнира или системные админы
     const canComplete = currentUser.id === tournament.referee?.id ||
                        currentUser.role === 'admin' ||
                        currentUser.role === 'system_admin' ||
-                       currentUser.role === 'club_owner' ||
-                       currentUser.role === 'club_admin';
+                       (currentUser.role === 'club_owner' && currentUser.id === tournament.club?.owner?.id) ||
+                       (currentUser.role === 'club_admin' && currentUser.id === tournament.club?.owner?.id);
 
     if (!canComplete) {
       alert('У вас нет прав для завершения турнира');
@@ -197,8 +197,8 @@ export default function TournamentDetails({ tournament, currentUser }: Tournamen
             const hasPermission = currentUser && (currentUser.id === tournament.referee?.id ||
                                 currentUser.role === 'admin' ||
                                 currentUser.role === 'system_admin' ||
-                                currentUser.role === 'club_owner' ||
-                                currentUser.role === 'club_admin');
+                                (currentUser.role === 'club_owner' && currentUser.id === tournament.club?.owner?.id) ||
+                                (currentUser.role === 'club_admin' && currentUser.id === tournament.club?.owner?.id));
             const canComplete = tournament.status === 'ACTIVE' || tournament.status === 'UPCOMING';
             
             console.log('Проверка прав доступа:');

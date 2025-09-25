@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react';
 import { clubsAPI, Club } from '../../../api/clubs';
 import { adminAPI } from '../../../api/admin';
-import { Check, X, Eye, Trash2, RefreshCw, AlertTriangle, Edit } from 'lucide-react';
+import { Check, X, Eye, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
 import AdminSearch from '../Common/AdminSearch';
 import AdminPagination from '../Common/AdminPagination';
 import AdminFilters, { FilterConfig } from '../Common/AdminFilters';
 import AdminTable from '../Common/AdminTable';
 import AnimatedTableRow from '../Common/AnimatedTableRow';
-import EditClubModal from '../Common/EditClubModal';
 import { useAdminTable } from '../../../hooks/useAdminTable';
 
 interface ClubsTabProps {
@@ -25,8 +24,6 @@ export default function ClubsTab({ message, setMessage }: ClubsTabProps) {
   const [deleteModal, setDeleteModal] = useState<{ show: boolean; club: Club | null }>({ show: false, club: null });
   const [retryAttempts, setRetryAttempts] = useState<{ [clubId: string]: number }>({});
   const [totalClubs, setTotalClubs] = useState(0);
-  const [editingClub, setEditingClub] = useState<Club | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const {
     state,
@@ -210,28 +207,6 @@ export default function ClubsTab({ message, setMessage }: ClubsTabProps) {
     setRetryAttempts(prev => ({ ...prev, [deleteModal.club?.id || '']: 0 }));
   };
 
-  const handleEditClub = (club: Club) => {
-    setEditingClub(club);
-    setShowEditModal(true);
-  };
-
-  const handleSaveClub = async (clubId: string, clubData: { name: string; description: string; city: string }) => {
-    try {
-      await adminAPI.updateClub(clubId, clubData);
-      // Обновляем локальное состояние
-      setClubs(prev => prev.map(club => 
-        club.id.toString() === clubId 
-          ? { ...club, name: clubData.name, description: clubData.description, city: clubData.city }
-          : club
-      ));
-      setShowEditModal(false);
-      setEditingClub(null);
-      setMessage({ text: '✅ Клуб успешно обновлен!', type: 'success' });
-    } catch (error) {
-      throw error;
-    }
-  };
-
   useEffect(() => {
     fetchClubs();
   }, [state.page, state.limit, state.search, state.filters]);
@@ -358,13 +333,6 @@ export default function ClubsTab({ message, setMessage }: ClubsTabProps) {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleEditClub(club)}
-                          className="text-[#A1A1A1] hover:text-green-400 transition-all duration-200 p-2 rounded-lg hover:bg-green-900/30 border border-transparent hover:border-green-500/50 hover:scale-105" 
-                          title="Редактировать клуб"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button 
                           className={`transition-all duration-200 p-2 rounded-lg hover:bg-red-900/30 border border-transparent hover:border-red-500/50 ${
                             actionLoading === `delete-${club.id}` 
                               ? 'text-red-400 cursor-not-allowed bg-red-900/20' 
@@ -474,19 +442,6 @@ export default function ClubsTab({ message, setMessage }: ClubsTabProps) {
         totalItems={totalClubs}
         itemsPerPage={state.limit}
       />
-
-      {/* Edit Club Modal */}
-      {editingClub && (
-        <EditClubModal
-          isOpen={showEditModal}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingClub(null);
-          }}
-          club={editingClub}
-          onSave={handleSaveClub}
-        />
-      )}
     </div>
   );
 }

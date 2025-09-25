@@ -12,8 +12,6 @@ interface TournamentFiltersProps {
   onSortByChange: (value: string) => void;
   sortOrder: string;
   onSortOrderChange: (value: string) => void;
-  typeFilter: string;
-  onTypeFilterChange: (value: string) => void;
   ratingFilter: string;
   onRatingFilterChange: (value: string) => void;
 }
@@ -27,8 +25,6 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
   onSortByChange,
   sortOrder,
   onSortOrderChange,
-  typeFilter,
-  onTypeFilterChange,
   ratingFilter,
   onRatingFilterChange,
 }) => {
@@ -48,21 +44,21 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
         </div>
 
 
-        {/* Type Filter */}
+        {/* Status Filter */}
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-gray-400" />
           <select
-            value={typeFilter}
-            onChange={(e) => onTypeFilterChange(e.target.value)}
+            value={status}
+            onChange={(e) => onStatusChange(e.target.value)}
             className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
           >
             <option value="">Все</option>
-            <option value="individual">Личные</option>
-            <option value="team">Командные</option>
+            <option value="UPCOMING">Предстоящие</option>
+            <option value="COMPLETED">Завершенные</option>
           </select>
         </div>
 
-        {/* Rating Filter */}
+        {/* Type Filter */}
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-gray-400" />
           <select
@@ -71,8 +67,8 @@ const TournamentFilters: React.FC<TournamentFiltersProps> = ({
             className="px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm"
           >
             <option value="">Все</option>
-            <option value="rated">С рейтингом СМА</option>
-            <option value="unrated">Вне рейтинга</option>
+            <option value="ELO">С рейтингом СМА</option>
+            <option value="DEFAULT">Вне рейтинга</option>
           </select>
         </div>
       </div>

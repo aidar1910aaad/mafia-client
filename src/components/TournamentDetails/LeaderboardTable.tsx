@@ -124,8 +124,6 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
         </thead>
         <tbody className="text-center">
           {playersStats.map((player, i) => {
-            const totalScore = player.totalPoints + player.totalBonusPoints - player.totalPenaltyPoints;
-            
             return (
               <tr key={player.playerId} className="border-b border-gray-800 hover:bg-gray-800/30">
                 <td className="border-r border-gray-700 px-2 py-2 font-medium">{i + 1}</td>
@@ -133,19 +131,19 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
                   {player.nickname}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 font-bold text-yellow-400">
-                  {Number(totalScore.toFixed(1))}
+                  {Number(player.totalPoints.toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 text-green-400">
-                  {Number(player.totalBonusPoints.toFixed(1))}
+                  {Number(player.totalBonusPoints.toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 text-red-400">
-                  {Number(player.totalPenaltyPoints.toFixed(1))}
+                  {Number(player.totalPenaltyPoints.toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 text-blue-400">
-                  {Number(player.totalLh.toFixed(1))}
+                  {Number(player.totalLh.toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 text-purple-400">
-                  {Number(player.totalCi.toFixed(1))}
+                  {Number(player.totalCi.toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2">
                   {player.gamesPlayed}

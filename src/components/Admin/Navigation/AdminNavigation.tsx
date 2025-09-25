@@ -10,7 +10,6 @@ interface AdminNavigationProps {
 export default function AdminNavigation({ activeTab, setActiveTab }: AdminNavigationProps) {
   const tabs = [
     { id: 'users', label: 'Пользователи', icon: Users },
-    { id: 'games', label: 'Игры', icon: Gamepad2 },
     { id: 'tournaments', label: 'Турниры', icon: Trophy },
     { id: 'statistics', label: 'Статистика', icon: BarChart3 },
     { id: 'settings', label: 'Настройки', icon: Settings },

@@ -1,23 +1,27 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import YearSelect from '@/components/Seasons/YearSelect';
 import SearchInput from '@/components/Seasons/SearchInput';
 import ClubRow from '@/components/Seasons/ClubRow';
 import { CreateClubForm } from '@/components/Clubs';
+import ClubPagination from '@/components/Clubs/ClubPagination';
 import Toast from '@/components/Toast/Toast';
 import { clubsAPI, Club } from '@/api/clubs';
 import { API_URL } from '@/api/API_URL';
 
-const years = [2028, 2027, 2026, 2025];
-
 export default function ClubsPage() {
-  const [year, setYear] = useState(years[0]);
   const [search, setSearch] = useState('');
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' as const, isVisible: false });
+  
+  // Пагинация
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
+  // Сортировка
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const fetchClubs = async () => {
     try {
@@ -44,10 +48,45 @@ export default function ClubsPage() {
     fetchClubs();
   };
 
+  // Обработчики для сортировки и пагинации
+  const handleSortToggle = () => {
+    setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
+    setCurrentPage(1); // Сбрасываем на первую страницу при смене сортировки
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setCurrentPage(1); // Сбрасываем на первую страницу при поиске
+  };
+
+
   // Преобразуем данные клубов для отображения в таблице
-  const clubsWithStats = clubs
+  const filteredClubs = clubs
     .filter(club => club.status === 'APPROVED') // Показываем только подтвержденные клубы
-    .map((club, index) => {
+    .filter(club =>
+      club.name.toLowerCase().includes(search.toLowerCase()) ||
+      club.city.toLowerCase().includes(search.toLowerCase())
+    );
+
+  // Сортируем по ELO рейтингу
+  const sortedClubs = filteredClubs.sort((a, b) => {
+    const aElo = a.elo || 1000;
+    const bElo = b.elo || 1000;
+    return sortOrder === 'desc' ? bElo - aElo : aElo - bElo;
+  });
+
+  // Пагинация
+  const totalPages = Math.ceil(sortedClubs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedClubs = sortedClubs.slice(startIndex, endIndex);
+
+  const clubsWithStats = paginatedClubs.map((club, index) => {
       // Правильно формируем путь к логотипу
       let logoPath = '/club-avatar-default.svg'; // Дефолтный логотип
       
@@ -70,33 +109,25 @@ export default function ClubsPage() {
         }
       }
       
-      // Вычисляем средний ELO всех игроков в клубе
-      const allMembers = [...club.members, ...club.administrators];
-      const averageElo = allMembers.length > 0 
-        ? Math.round(allMembers.reduce((sum, member) => sum + (member.elo || 1000), 0) / allMembers.length)
-        : 1000; // Дефолтный ELO если нет участников
+      // Используем ELO клуба напрямую из API
+      const clubElo = club.elo || 1000; // Используем ELO клуба из API, дефолт 1000
       
       // Вычисляем общие баллы всех игроков в клубе
+      const allMembers = [...club.members, ...club.administrators];
       const totalPoints = allMembers.length > 0
         ? Math.round(allMembers.reduce((sum, member) => sum + (member.points || 0), 0))
         : 0;
 
       return {
-        place: index + 1,
+        place: startIndex + index + 1,
         logo: logoPath,
         name: club.name,
         city: club.city,
         points: totalPoints,
-        elo: averageElo,
+        elo: clubElo,
         originalClub: club
       };
     });
-
-  // Фильтрация по поиску
-  const filteredClubs = clubsWithStats.filter(club =>
-    club.name.toLowerCase().includes(search.toLowerCase()) ||
-    club.city.toLowerCase().includes(search.toLowerCase())
-  );
 
   if (loading) {
     return (
@@ -123,8 +154,7 @@ export default function ClubsPage() {
         {/* Фильтры и кнопка создания */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 flex-1">
-            <YearSelect years={years} value={year} onChange={setYear} />
-            <SearchInput value={search} onChange={setSearch} onSearch={() => {}} />
+            <SearchInput value={search} onChange={handleSearchChange} onSearch={() => {}} />
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
@@ -138,17 +168,33 @@ export default function ClubsPage() {
           </button>
         </div>
 
+        {/* Элементы управления */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleSortToggle}
+              className="flex items-center gap-2 px-4 py-2 bg-[#2A2A2A] hover:bg-[#3A3A3A] rounded-lg transition-colors text-white"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              Сортировка: {sortOrder === 'desc' ? 'По убыванию' : 'По возрастанию'}
+            </button>
+            <div className="text-sm text-gray-400">
+              Показано {clubsWithStats.length} из {sortedClubs.length} клубов
+            </div>
+          </div>
+        </div>
+
         {/* Заголовки - только для десктопа */}
-        <div className="hidden md:flex items-center justify-between px-6 pb-2 pt-2 text-[#C7C7C7] text-sm font-medium">
-          <span className="min-w-[220px]"></span>
-          <span className="w-[80px] text-center">Баллы</span>
+        <div className="hidden md:flex items-center justify-end px-6 pb-2 pt-2 text-[#C7C7C7] text-sm font-medium">
           <span className="flex items-center gap-2 w-[100px] justify-end">ELO</span>
         </div>
 
         {/* Список клубов */}
         <div className="space-y-3">
-          {filteredClubs.length > 0 ? (
-            filteredClubs.map((club, i) => (
+          {clubsWithStats.length > 0 ? (
+            clubsWithStats.map((club, i) => (
               <ClubRow key={club.originalClub.id} {...club} isActive={false} />
             ))
           ) : (
@@ -157,10 +203,21 @@ export default function ClubsPage() {
             </div>
           )}
         </div>
+        {totalPages > 1 && (
+          <ClubPagination
+            key={`pagination-${currentPage}-${totalPages}`}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
 
-      </div>
+        </div>
 
-      {/* Модальное окно создания клуба */}
+        {/* Пагинация снизу - как на странице турниров */}
+       
+
+        {/* Модальное окно создания клуба */}
       {showCreateForm && (
         <CreateClubForm
           onSuccess={handleCreateSuccess}

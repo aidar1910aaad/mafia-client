@@ -304,4 +304,110 @@ export const adminAPI = {
     }
   },
 
+  // Обновить клуб
+  updateClub: async (clubId: string, clubData: { name: string; description: string; city: string }): Promise<AdminAPIResponse> => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
+      }
+
+      const response = await fetch(`${API_URL}/clubs/${clubId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(clubData),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // Если не удалось распарсить JSON, используем стандартное сообщение
+          if (response.status === 500) {
+            errorMessage = 'Внутренняя ошибка сервера. Попробуйте позже или обратитесь к администратору.';
+          } else if (response.status === 403) {
+            errorMessage = 'Недостаточно прав для обновления клуба. Только владелец клуба или администратор могут редактировать клуб.';
+          } else if (response.status === 404) {
+            errorMessage = 'Клуб не найден.';
+          } else if (response.status === 401) {
+            errorMessage = 'Сессия истекла. Пожалуйста, войдите в систему заново.';
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      return { success: true };
+    } catch (error) {
+      // Если это ошибка сети
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Ошибка сети. Проверьте подключение к интернету.');
+      }
+      throw error;
+    }
+  },
+
+  // Обновить профиль пользователя
+  updateUser: async (userId: string, userData: { email: string; nickname: string }): Promise<AdminAPIResponse> => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Токен авторизации не найден. Пожалуйста, войдите в систему заново.');
+      }
+
+      const response = await fetch(`${API_URL}/admin/users/${userId}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Ошибка ${response.status}: ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (parseError) {
+          // Если не удалось распарсить JSON, используем стандартное сообщение
+          if (response.status === 500) {
+            errorMessage = 'Внутренняя ошибка сервера. Попробуйте позже или обратитесь к администратору.';
+          } else if (response.status === 403) {
+            errorMessage = 'Недостаточно прав для обновления профиля пользователя. Только администратор системы может редактировать профили пользователей.';
+          } else if (response.status === 404) {
+            errorMessage = 'Пользователь не найден.';
+          } else if (response.status === 401) {
+            errorMessage = 'Сессия истекла. Пожалуйста, войдите в систему заново.';
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      return { success: true };
+    } catch (error) {
+      // Если это ошибка сети
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Ошибка сети. Проверьте подключение к интернету.');
+      }
+      throw error;
+    }
+  },
+
 }; 

@@ -22,11 +22,10 @@ export default function TournamentsPage() {
     page: 1,
     limit: 10,
     search: '',
-    status: '',
+    status: 'UPCOMING',
     sortBy: 'date',
     sortOrder: 'desc',
-    typeFilter: '',
-    ratingFilter: ''
+    type: ''
   });
 
   const fetchTournaments = async () => {
@@ -70,12 +69,9 @@ export default function TournamentsPage() {
   };
 
 
-  const handleTypeFilterChange = (value: string) => {
-    setFilters(prev => ({ ...prev, typeFilter: value, page: 1 }));
-  };
 
-  const handleRatingFilterChange = (value: string) => {
-    setFilters(prev => ({ ...prev, ratingFilter: value, page: 1 }));
+  const handleTypeFilterChange = (value: string) => {
+    setFilters(prev => ({ ...prev, type: value, page: 1 }));
   };
 
   const handlePageChange = (page: number) => {
@@ -127,10 +123,8 @@ export default function TournamentsPage() {
           onSortByChange={handleSortByChange}
           sortOrder={filters.sortOrder || 'desc'}
           onSortOrderChange={handleSortOrderChange}
-          typeFilter={filters.typeFilter || ''}
-          onTypeFilterChange={handleTypeFilterChange}
-          ratingFilter={filters.ratingFilter || ''}
-          onRatingFilterChange={handleRatingFilterChange}
+          ratingFilter={filters.type || ''}
+          onRatingFilterChange={handleTypeFilterChange}
         />
 
         {/* Loading State */}

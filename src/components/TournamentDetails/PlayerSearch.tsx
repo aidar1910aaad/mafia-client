@@ -17,10 +17,10 @@ export default function PlayerSearch({ tournament, currentUser, onPlayerAdded }:
 
   // Проверяем права пользователя
   const isReferee = currentUser?.id === tournament.referee?.id;
-  const isAdmin = currentUser?.role === 'admin';
-  const isClubOwner = currentUser?.id === tournament.club?.owner?.id;
-  // TODO: Добавить проверку администраторов клуба когда API будет готов
-  const hasPermission = isReferee || isAdmin || isClubOwner;
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'system_admin';
+  const isClubOwner = currentUser?.role === 'club_owner' && currentUser?.id === tournament.club?.owner?.id;
+  const isClubAdmin = currentUser?.role === 'club_admin' && currentUser?.id === tournament.club?.owner?.id;
+  const hasPermission = isReferee || isAdmin || isClubOwner || isClubAdmin;
 
   // Загружаем участников турнира при монтировании компонента
   useEffect(() => {

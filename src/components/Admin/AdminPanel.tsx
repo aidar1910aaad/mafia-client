@@ -8,7 +8,6 @@ import AdminNavigation from './Navigation/AdminNavigation';
 import AdminFooter from './Footer/AdminFooter';
 import UsersTab from './Users/UsersTab';
 import ClubsTab from './Clubs/ClubsTab';
-import GamesTab from './Games/GamesTab';
 import TournamentsTab from './Tournaments/TournamentsTab';
 import StatisticsTab from './Statistics/StatisticsTab';
 import SettingsTab from './Settings/SettingsTab';
@@ -63,8 +62,6 @@ export default function AdminPanel() {
                 return <UsersTab message={message} />;
             case 'clubs':
                 return <ClubsTab message={message} setMessage={setMessage} />;
-            case 'games':
-                return <GamesTab />;
             case 'tournaments':
                 return <TournamentsTab message={message} setMessage={setMessage} />;
             case 'statistics':

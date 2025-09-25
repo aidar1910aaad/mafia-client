@@ -72,7 +72,7 @@ export interface CreateTournamentRequest {
     date: string;
     clubId: number;
     refereeId: number;
-    type: 'DEFAULT' | 'ELO';
+    type?: 'DEFAULT' | 'ELO';
     stars?: number;
 }
 
@@ -95,8 +95,7 @@ export interface TournamentsFilters {
     refereeId?: number;
     sortBy?: string;
     sortOrder?: string;
-    typeFilter?: string;
-    ratingFilter?: string;
+    type?: string;
 }
 
 export interface FillTournamentRequest {
@@ -121,7 +120,7 @@ export const tournamentsAPI = {
                 date: data.date,
                 clubId: data.clubId,
                 refereeId: data.refereeId,
-                type: data.type
+                type: data.type || 'DEFAULT'
             };
 
             // Добавляем stars только для ELO турниров
@@ -275,9 +274,7 @@ export const tournamentsAPI = {
             if (filters.refereeId) params.append('refereeId', filters.refereeId.toString());
             if (filters.sortBy) params.append('sortBy', filters.sortBy);
             if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
-            // dateFilter removed - server doesn't support this parameter
-            if (filters.typeFilter) params.append('typeFilter', filters.typeFilter);
-            if (filters.ratingFilter) params.append('ratingFilter', filters.ratingFilter);
+            if (filters.type) params.append('type', filters.type);
 
             // Prepare headers - include authorization only if token exists
             const headers: Record<string, string> = {

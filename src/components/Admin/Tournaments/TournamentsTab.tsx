@@ -186,9 +186,14 @@ export default function TournamentsTab({ message, setMessage }: TournamentsTabPr
     setShowEditModal(true);
   };
 
+  const handleViewTournament = (tournament: Tournament) => {
+    // Перенаправляем на админскую страницу турнира
+    window.open(`/admin/tournaments/${tournament.id}`, '_blank');
+  };
+
   const handleSaveTournament = async (tournamentId: string, tournamentData: { name: string; description: string }) => {
     try {
-      await adminAPI.updateTournament(tournamentId, tournamentData);
+      await tournamentsAPI.updateTournament(parseInt(tournamentId), tournamentData);
       // Обновляем локальное состояние
       setTournaments(prev => prev.map(tournament => 
         tournament.id.toString() === tournamentId 
@@ -310,7 +315,11 @@ export default function TournamentsTab({ message, setMessage }: TournamentsTabPr
                     <td className="p-6">{getStatusBadge(tournament.status)}</td>
                     <td className="p-6">
                       <div className="flex items-center gap-2">
-                        <button className="text-[#A1A1A1] hover:text-blue-400 transition-all duration-200 p-2 rounded-lg hover:bg-blue-900/30 border border-transparent hover:border-blue-500/50 hover:scale-105" title="Просмотреть турнир">
+                        <button 
+                          onClick={() => handleViewTournament(tournament)}
+                          className="text-[#A1A1A1] hover:text-blue-400 transition-all duration-200 p-2 rounded-lg hover:bg-blue-900/30 border border-transparent hover:border-blue-500/50 hover:scale-105" 
+                          title="Просмотреть турнир"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button 

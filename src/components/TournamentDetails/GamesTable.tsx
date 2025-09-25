@@ -39,6 +39,7 @@ const ROLES = {
 const RESULTS = {
   [GameResult.MAFIA_WIN]: { name: 'Победа мафии', color: 'text-red-400' },
   [GameResult.CITIZEN_WIN]: { name: 'Победа горожан', color: 'text-green-400' },
+  [GameResult.MANIAC_WIN]: { name: 'Победа маньяка', color: 'text-orange-400' },
   [GameResult.DRAW]: { name: 'Ничья', color: 'text-yellow-400' },
 } as const;
 
@@ -67,6 +68,7 @@ const NumberInput = React.memo(({
     setLocalValue(newValue);
     
     const numValue = parseFloat(newValue);
+    
     if (!isNaN(numValue) && numValue >= min) {
       onChange(numValue);
     }
@@ -74,8 +76,14 @@ const NumberInput = React.memo(({
 
   const handleBlur = () => {
     const numValue = parseFloat(localValue);
-    if (isNaN(numValue) || numValue < min) {
+    
+    if (isNaN(numValue)) {
       setLocalValue(value.toString());
+    } else if (numValue < min) {
+      setLocalValue(min.toString());
+      onChange(min);
+    } else {
+      onChange(numValue);
     }
   };
 
@@ -147,6 +155,7 @@ const PlayerRow = React.memo(({
   };
 
   const handlePointsChange = (field: keyof PlayerResult) => (value: number) => {
+    console.log(`Обновление ${field}:`, value);
     onUpdate(field, value);
   };
 
@@ -239,6 +248,7 @@ const GameCard = React.memo(({
     const updatedPlayers = gameData.players.map(player => 
       player.playerId === playerId ? { ...player, [field]: value } : player
     );
+    
     onUpdateGame(game.id, 'players', updatedPlayers);
   };
 
@@ -247,7 +257,7 @@ const GameCard = React.memo(({
   return (
     <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-700">
       <div className="flex items-center justify-between mb-4">
-        <h5 className="text-md font-medium text-white">Игра #{game.id}</h5>
+        <h5 className="text-md font-medium text-white">{game.name || `Игра #${game.id}`}</h5>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-400">{game.players?.length || 0} игроков</div>
           
@@ -262,6 +272,7 @@ const GameCard = React.memo(({
                 <option value="">Не определен</option>
                 <option value={GameResult.MAFIA_WIN}>Победа мафии</option>
                 <option value={GameResult.CITIZEN_WIN}>Победа горожан</option>
+                <option value={GameResult.MANIAC_WIN}>Победа маньяка</option>
                 <option value={GameResult.DRAW}>Ничья</option>
               </select>
             </div>
@@ -345,7 +356,8 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
       currentUser.id === tournament.referee?.id ||
       currentUser.role === 'admin' ||
       currentUser.role === 'system_admin' ||
-      currentUser.role === 'club_owner'
+      (currentUser.role === 'club_owner' && currentUser.id === tournament.club?.owner?.id) ||
+      (currentUser.role === 'club_admin' && currentUser.id === tournament.club?.owner?.id)
     );
   }, [currentUser, tournament]);
 
@@ -368,6 +380,7 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
         }
         
         setGames(gamesData);
+        console.log('🎮 Загружено игр:', gamesData.length);
         
         // Инициализируем данные игр
         const initialGameData: { [gameId: number]: GameData } = {};
@@ -375,11 +388,11 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
           const players: PlayerResult[] = game.players?.map(player => ({
             playerId: player.player?.id || 0,
             role: player.role || 'CITIZEN',
-            points: player.points || 0,
-            bonusPoints: player.bonusPoints || 0,
-            penaltyPoints: player.penaltyPoints || 0,
-            lh: 0, // Поле не существует в GamePlayer, используем 0
-            ci: 0, // Поле не существует в GamePlayer, используем 0
+            points: player.points ?? 0,
+            bonusPoints: player.bonusPoints ?? 0,
+            penaltyPoints: player.penaltyPoints ?? 0,
+            lh: player.lh ?? 0,
+            ci: player.ci ?? 0,
           })) || [];
 
           initialGameData[game.id] = {
@@ -405,6 +418,7 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
 
   // Обновляем данные игры
   const handleUpdateGame = useCallback((gameId: number, field: keyof GameData, value: any) => {
+    console.log(`📝 Изменение в игре ${gameId}:`, field);
     setGameData(prev => ({
       ...prev,
       [gameId]: {
@@ -420,33 +434,81 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
     const data = gameData[gameId];
     if (!data || !data.hasChanges) return;
 
+    // Проверяем, что данные валидны
+    const hasValidData = data.players.every(player => 
+      typeof player.points === 'number' && 
+      typeof player.bonusPoints === 'number' && 
+      typeof player.penaltyPoints === 'number' &&
+      !isNaN(player.points) && 
+      !isNaN(player.bonusPoints) && 
+      !isNaN(player.penaltyPoints)
+    );
+
+    if (!hasValidData) {
+      console.error('Некорректные данные для сохранения:', data.players);
+      return;
+    }
+
     setSavingGames(prev => new Set(prev).add(gameId));
 
     try {
+      console.log('💾 Сохранение игры', gameId, 'с', data.players.length, 'игроками');
+      const rwPlayer = data.players.find(p => p.playerId === 53);
+      console.log('📤 Отправляемые данные для rw:', rwPlayer);
+      console.log('📤 Все отправляемые данные:', data.players.map(p => ({
+        playerId: p.playerId,
+        points: p.points,
+        bonusPoints: p.bonusPoints,
+        penaltyPoints: p.penaltyPoints,
+        lh: p.lh,
+        ci: p.ci
+      })));
+      
       await gamesAPI.updateGameResults(gameId, {
         result: data.result,
         playerResults: data.players,
       });
+      
+      console.log('✅ Игра сохранена успешно');
+      
+      // Перезагружаем данные игры с сервера для синхронизации
+      try {
+        const updatedGame = await gamesAPI.getGameById(gameId);
+        console.log('🔄 Данные перезагружены с сервера');
+        
+        if (updatedGame) {
+          console.log('📊 Данные с сервера для игрока rw:', updatedGame.players.find(p => p.player?.nickname === 'rw'));
+          
+          setGames(prev => 
+            prev.map(game => 
+              game.id === gameId ? updatedGame : game
+            )
+          );
+          
+          // Обновляем gameData с актуальными данными
+          const updatedPlayers: PlayerResult[] = updatedGame.players?.map(player => ({
+            playerId: player.player?.id || 0,
+            role: player.role || 'CITIZEN',
+            points: player.points ?? 0,
+            bonusPoints: player.bonusPoints ?? 0,
+            penaltyPoints: player.penaltyPoints ?? 0,
+            lh: player.lh ?? 0,
+            ci: player.ci ?? 0,
+          })) || [];
 
-      // Обновляем основное состояние
-      setGames(prev => 
-        prev.map(game => 
-          game.id === gameId 
-            ? { ...game, result: data.result }
-            : game
-        )
-      );
-
-      // Сбрасываем флаг изменений
-      setGameData(prev => ({
-        ...prev,
-        [gameId]: {
-          ...prev[gameId],
-          hasChanges: false,
+          setGameData(prev => ({
+            ...prev,
+            [gameId]: {
+              id: updatedGame.id,
+              result: updatedGame.result || null,
+              players: updatedPlayers,
+              hasChanges: false,
+            }
+          }));
         }
-      }));
-
-      console.log('✅ Данные игры сохранены:', gameId);
+      } catch (reloadError) {
+        console.error('Ошибка перезагрузки данных игры:', reloadError);
+      }
     } catch (error) {
       console.error('❌ Ошибка сохранения игры:', error);
     } finally {

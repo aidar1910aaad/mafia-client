@@ -3,6 +3,7 @@ import { API_URL } from '../API_URL';
 export enum GameResult {
   MAFIA_WIN = 'MAFIA_WIN',
   CITIZEN_WIN = 'CITIZEN_WIN',
+  MANIAC_WIN = 'MANIAC_WIN',
   DRAW = 'DRAW'
 }
 
@@ -15,6 +16,8 @@ export interface GamePlayer {
     points: number;
     bonusPoints: number;
     penaltyPoints: number;
+    lh?: number;
+    ci?: number;
     kills: number;
     deaths: number;
     gamesPlayed?: number;
@@ -161,6 +164,8 @@ export interface UpdateGameResultsRequest {
         points: number;
         bonusPoints: number;
         penaltyPoints: number;
+        lh?: number;
+        ci?: number;
     }[];
     result?: GameResult | null;
 }
@@ -345,7 +350,7 @@ export const gamesAPI = {
             const token = localStorage.getItem('authToken');
             if (!token) { throw new Error('Токен не найден'); }
 
-            console.log('Отправляем обновление результатов игры:', { gameId, data });
+            console.log('📤 Отправка запроса на сервер:', gameId);
             
             const response = await fetch(`${API_URL}/games/${gameId}/results`, {
                 method: 'PATCH',
@@ -356,36 +361,30 @@ export const gamesAPI = {
                 },
                 body: JSON.stringify(data),
             });
-
-            console.log('Статус ответа:', response.status);
-            console.log('Заголовки ответа:', Object.fromEntries(response.headers.entries()));
             
+            console.log('📥 Ответ сервера:', response.status);
+
             const responseText = await response.text();
-            console.log('Тело ответа (текст):', responseText);
             
             let responseData;
             try {
                 responseData = JSON.parse(responseText);
-                console.log('Тело ответа (JSON):', responseData);
             } catch (parseError) {
-                console.log('Ответ не является валидным JSON');
+                // Ответ не является валидным JSON
             }
 
             if (!response.ok) {
                 let errorMessage = `Ошибка обновления результатов: ${response.status}`;
                 try {
                     const errorData = responseData || await response.json();
-                    console.error('Детали ошибки:', errorData);
                     errorMessage = errorData.message || errorData.error || errorMessage;
                 } catch (parseError) {
-                    console.error('Не удалось распарсить ответ ошибки:', parseError);
                     errorMessage = responseText || errorMessage;
                 }
                 throw new Error(errorMessage);
             }
             
             const result = responseData || await response.json();
-            console.log('Результаты успешно обновлены:', result);
             return result;
         } catch (error) {
             console.error('Полная ошибка обновления результатов:', error);

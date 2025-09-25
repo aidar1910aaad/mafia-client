@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { adminAPI, User } from '../../../api/admin';
-import { RefreshCw, Eye, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Avatar from '../../UI/Avatar';
 import AdminSearch from '../Common/AdminSearch';
 import AdminPagination from '../Common/AdminPagination';
@@ -355,9 +355,6 @@ export default function UsersTab({ message }: UsersTabProps) {
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1">
-                        <button className="text-[#A1A1A1] hover:text-blue-400 transition-all duration-200 p-1.5 rounded-lg hover:bg-[#1D1D1D]/50 hover:scale-105" title="Просмотреть">
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
                         <button 
                           onClick={() => handleEditUser(user)}
                           className="text-[#A1A1A1] hover:text-green-400 transition-all duration-200 p-1.5 rounded-lg hover:bg-[#1D1D1D]/50 hover:scale-105" 
