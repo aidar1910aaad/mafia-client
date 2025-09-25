@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { clubsAPI, Club } from '../../../api/clubs';
 import { adminAPI } from '../../../api/admin';
-import { Check, X, Eye, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Check, X, Trash2, RefreshCw, AlertTriangle } from 'lucide-react';
 import AdminSearch from '../Common/AdminSearch';
 import AdminPagination from '../Common/AdminPagination';
 import AdminFilters, { FilterConfig } from '../Common/AdminFilters';
@@ -329,9 +329,6 @@ export default function ClubsTab({ message, setMessage }: ClubsTabProps) {
                             </button>
                           </>
                         )}
-                        <button className="text-[#A1A1A1] hover:text-blue-400 transition-all duration-200 p-2 rounded-lg hover:bg-blue-900/30 border border-transparent hover:border-blue-500/50 hover:scale-105" title="Просмотреть клуб">
-                          <Eye className="w-4 h-4" />
-                        </button>
                         <button 
                           className={`transition-all duration-200 p-2 rounded-lg hover:bg-red-900/30 border border-transparent hover:border-red-500/50 ${
                             actionLoading === `delete-${club.id}` 
