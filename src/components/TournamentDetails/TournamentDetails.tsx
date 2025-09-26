@@ -201,10 +201,6 @@ export default function TournamentDetails({ tournament, currentUser }: Tournamen
                                 (currentUser.role === 'club_admin' && currentUser.id === tournament.club?.owner?.id));
             const canComplete = tournament.status === 'ACTIVE' || tournament.status === 'UPCOMING';
             
-            console.log('Проверка прав доступа:');
-            console.log('hasPermission:', hasPermission);
-            console.log('canComplete:', canComplete);
-            console.log('Показывать кнопки:', hasPermission && canComplete);
             
             return hasPermission && canComplete;
           })() && (

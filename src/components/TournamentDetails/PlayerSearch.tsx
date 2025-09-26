@@ -99,33 +99,26 @@ export default function PlayerSearch({ tournament, currentUser, onPlayerAdded }:
 
   return (
     <>
-      <div className="bg-[#1E1E1E] rounded-lg p-6 border border-gray-700 mb-6">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <User className="w-5 h-5 text-[#8469EF]" />
-          Управление участниками турнира
-        </h3>
+      {hasPermission && (
+        <div className="bg-[#1E1E1E] rounded-lg p-6 border border-gray-700 mb-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-[#8469EF]" />
+            Управление участниками турнира
+          </h3>
 
-        {/* Кнопка добавления игроков */}
-        <div className="mb-6">
-          {!hasPermission && currentUser?.role === 'player' && (
-            <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-500 rounded-lg">
-              <div className="text-yellow-400 text-sm text-center">
-                <div className="font-medium mb-1">⚠️ Тестовый режим</div>
-                <div>Вы используете тестовый режим для проверки функциональности</div>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full px-4 py-3 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors font-medium flex items-center justify-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Заполнить турнир
-          </button>
-          <p className="text-gray-400 text-sm mt-2 text-center">
-            Поиск игроков или добавление вручную
-          </p>
-        </div>
+          {/* Кнопка добавления игроков */}
+          <div className="mb-6">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="w-full px-4 py-3 bg-[#8469EF] text-white rounded-lg hover:bg-[#6B4FFF] transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Заполнить турнир
+            </button>
+            <p className="text-gray-400 text-sm mt-2 text-center">
+              Поиск игроков или добавление вручную
+            </p>
+          </div>
 
         {/* Список участников турнира - показываем только если есть участники */}
         {participants.length > 0 && (
@@ -173,16 +166,16 @@ export default function PlayerSearch({ tournament, currentUser, onPlayerAdded }:
           </div>
         )}
 
-      </div>
-
-      {/* Модальное окно добавления игроков */}
-      <FillTournamentModal
-        tournament={tournament}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onFillTournament={handleFillTournament}
-        currentUser={currentUser}
-      />
+        {/* Модальное окно добавления игроков */}
+        <FillTournamentModal
+          tournament={tournament}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onFillTournament={handleFillTournament}
+          currentUser={currentUser}
+        />
+        </div>
+      )}
     </>
   );
 } 

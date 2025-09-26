@@ -28,6 +28,7 @@ export interface Player {
     citizenGames?: number;
     citizenWins?: number;
     eloRating: number;
+    tournamentsParticipated: number;
     createdAt: string;
 }
 
@@ -59,6 +60,7 @@ export interface ExtendedPlayerProfile {
     citizenWins?: number;
     eloRating: number;
     totalBonusPoints: number;
+    tournamentsParticipated: number;
     roleStats: RoleStat[];
     createdAt: string;
     updatedAt: string;

@@ -189,27 +189,10 @@ export default function FillTournamentModal({
       console.log('=====================================');
       
       // Вызываем API генерации игр
-      console.log('Вызываем API генерации игр...');
-      
-      // Добавляем дополнительную диагностику перед вызовом API
-      console.log('=== ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА ===');
-      console.log('Токен авторизации:', localStorage.getItem('authToken')?.substring(0, 50) + '...');
-      console.log('Текущий пользователь ID:', currentUser.id);
-      console.log('Текущий пользователь роль:', currentUser.role);
-      console.log('Турнир ID:', tournament.id);
-      console.log('Судья турнира ID:', tournament.referee?.id);
-      console.log('=====================================');
       
       try {
         await gamesAPI.generateGames(generateGamesData);
       } catch (apiError) {
-        console.error('=== ОШИБКА API ГЕНЕРАЦИИ ИГР ===');
-        console.error('Ошибка:', apiError);
-        console.error('Возможные причины:');
-        console.error('1. Сервер требует роль "admin" для генерации игр');
-        console.error('2. Проблема с авторизацией на сервере');
-        console.error('3. API endpoint не поддерживает судей турнира');
-        console.error('=====================================');
         
         // Показываем пользователю более понятную ошибку
         if (apiError instanceof Error && apiError.message.includes('Forbidden')) {

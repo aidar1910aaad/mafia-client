@@ -268,7 +268,6 @@ const FinalGamesTable = ({ tournament, currentUser }: FinalGamesTableProps) => {
         );
         
         setGames(finalGames);
-        console.log('🎮 Загружено финальных игр:', finalGames.length);
         
         // Инициализируем данные игр
         const initialGameData: { [gameId: number]: GameData } = {};

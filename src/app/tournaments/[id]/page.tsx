@@ -31,10 +31,6 @@ export default function TournamentPage() {
           authAPI.getProfile().catch(() => null) // Игнорируем ошибки если пользователь не авторизован
         ]);
         
-        console.log('Страница турнира - полученные данные:');
-        console.log('ID турнира:', tournamentId);
-        console.log('Турнир:', tournamentData);
-        console.log('Текущий пользователь:', userData);
         
         setTournament(tournamentData);
         setCurrentUser(userData);
@@ -51,7 +47,7 @@ export default function TournamentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen bg-[#161616] flex justify-center items-center">
         <div className="flex items-center gap-3">
           <Loader2 className="w-6 h-6 animate-spin text-[#8469EF]" />
           <span className="text-gray-400">Загрузка турнира...</span>

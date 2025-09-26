@@ -380,7 +380,6 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
         }
         
         setGames(gamesData);
-        console.log('🎮 Загружено игр:', gamesData.length);
         
         // Инициализируем данные игр
         const initialGameData: { [gameId: number]: GameData } = {};
@@ -418,7 +417,6 @@ const GamesTable = ({ tournament, currentUser }: GamesTableProps) => {
 
   // Обновляем данные игры
   const handleUpdateGame = useCallback((gameId: number, field: keyof GameData, value: any) => {
-    console.log(`📝 Изменение в игре ${gameId}:`, field);
     setGameData(prev => ({
       ...prev,
       [gameId]: {

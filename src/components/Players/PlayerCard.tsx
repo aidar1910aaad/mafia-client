@@ -104,12 +104,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
           {/* Key Stats */}
           <div className="flex items-center gap-6 text-sm">
             <div className="text-center">
-              <div className="text-white font-semibold">{formatNumber(player.totalPoints)}</div>
-              <div className="text-gray-400 text-xs">Очки</div>
+              <div className="text-white font-semibold">{formatNumber(player.tournamentsParticipated)}</div>
+              <div className="text-gray-400 text-xs">Турниров сыграно</div>
             </div>
             <div className="text-center">
               <div className="text-white font-semibold">{formatNumber(player.eloRating)}</div>
-              <div className="text-gray-400 text-xs">ELO</div>
+              <div className="text-gray-400 text-xs">Баллы</div>
             </div>
           </div>
 
@@ -167,12 +167,12 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
             {/* Mobile Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="text-center bg-[#2A2A2A] rounded p-2">
-                <div className="text-white font-semibold text-sm">{formatNumber(player.totalPoints)}</div>
-                <div className="text-gray-400 text-xs">Очки</div>
+                <div className="text-white font-semibold text-sm">{formatNumber(player.tournamentsParticipated)}</div>
+                <div className="text-gray-400 text-xs">Турниров сыграно</div>
               </div>
               <div className="text-center bg-[#2A2A2A] rounded p-2">
                 <div className="text-white font-semibold text-sm">{formatNumber(player.eloRating)}</div>
-                <div className="text-gray-400 text-xs">ELO</div>
+                <div className="text-gray-400 text-xs">Баллы</div>
               </div>
             </div>
 

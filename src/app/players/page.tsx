@@ -22,7 +22,7 @@ export default function PlayersPage() {
     limit: 10,
     search: '',
     role: '',
-    sortBy: 'nickname',
+    sortBy: 'tournamentsParticipated',
     sortOrder: 'desc'
   });
 
@@ -113,7 +113,7 @@ export default function PlayersPage() {
           onSearchChange={handleSearchChange}
           role={filters.role || ''}
           onRoleChange={handleRoleChange}
-          sortBy={filters.sortBy || 'nickname'}
+          sortBy={filters.sortBy || 'tournamentsParticipated'}
           onSortByChange={handleSortByChange}
           sortOrder={filters.sortOrder || 'desc'}
           onSortOrderChange={handleSortOrderChange}

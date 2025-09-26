@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Tournament } from '../../api/tournaments';
 import { GamePlayer } from '../../api/games';
-import { Trophy, Crown, Shield, Heart, Skull, User, Zap, Stethoscope } from 'lucide-react';
+import { Trophy, Crown, Shield, Heart, Skull, User, Zap, Stethoscope, Target } from 'lucide-react';
 
 interface NominationsGridProps {
   tournament?: Tournament;
@@ -13,6 +13,8 @@ interface PlayerStats {
   totalPoints: number;
   totalBonusPoints: number;
   totalPenaltyPoints: number;
+  totalLh: number;
+  totalCi: number;
   totalGames: number;
   totalWins: number;
   roleStats: {
@@ -20,46 +22,64 @@ interface PlayerStats {
       gamesPlayed: number;
       gamesWon: number;
       totalPoints: number;
+      totalPenaltyPoints: number;
+      totalLh: number;
+      totalCi: number;
     };
   };
 }
 
+interface PlayerNomination {
+  nickname: string;
+  totalPoints: number;
+  totalBonusPoints: number;
+  totalPenaltyPoints: number;
+  totalLh: number;
+  totalCi: number;
+  rating: number;
+}
+
 interface Nomination {
   title: string;
-  players: string[];
+  players: PlayerNomination[];
   color: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const NominationCard = ({ title, players, color, icon: Icon }: { 
   title: string; 
-  players: string[]; 
+  players: PlayerNomination[]; 
   color: string; 
   icon: React.ComponentType<{ className?: string }>;
 }) => {
   return (
     <div className="bg-[#1C1C1C] rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
       <div className="flex items-center justify-center mb-3">
-        <Icon className="w-5 h-5 mr-2" style={{ color }} />
+        <div className="w-5 h-5 mr-2" style={{ color }}>
+          <Icon className="w-5 h-5" />
+        </div>
         <h3 className={`text-lg font-bold`} style={{ color }}>
           {title}
         </h3>
       </div>
-      <div className="space-y-2 text-center text-gray-300">
+      <div className="space-y-1 text-center text-gray-300">
         {players.map((player, index) => (
-          <div key={index} className="flex items-center justify-center">
-            {index === 0 && players.length > 1 && (
-              <Trophy className="w-4 h-4 text-yellow-400 mr-2" />
-            )}
-            {index === 1 && players.length > 2 && (
-              <Trophy className="w-4 h-4 text-gray-300 mr-2" />
-            )}
-            {index === 2 && players.length > 2 && (
-              <Trophy className="w-4 h-4 text-orange-400 mr-2" />
-            )}
-            <span className={index === 0 ? 'font-semibold text-white' : ''}>
-              {player}
-            </span>
+          <div key={index} className="rounded-lg p-3">
+            <div className="flex items-center justify-center mb-2">
+              {index === 0 && (
+                <Trophy className="w-4 h-4 text-yellow-400 mr-2" />
+              )}
+              {index === 1 && (
+                <Trophy className="w-4 h-4 text-gray-300 mr-2" />
+              )}
+              {index === 2 && (
+                <Trophy className="w-4 h-4 text-orange-400 mr-2" />
+              )}
+              <span className={index === 0 ? 'font-semibold text-white' : 'font-medium text-white'}>
+                {player.nickname}
+              </span>
+            </div>
+            
           </div>
         ))}
         {players.length === 0 && (
@@ -94,6 +114,8 @@ const NominationsGrid = ({ tournament }: NominationsGridProps) => {
               totalPoints: 0,
               totalBonusPoints: 0,
               totalPenaltyPoints: 0,
+              totalLh: 0,
+              totalCi: 0,
               totalGames: 0,
               totalWins: 0,
               roleStats: {}
@@ -104,6 +126,8 @@ const NominationsGrid = ({ tournament }: NominationsGridProps) => {
           stats.totalPoints += gamePlayer.points;
           stats.totalBonusPoints += gamePlayer.bonusPoints;
           stats.totalPenaltyPoints += gamePlayer.penaltyPoints;
+          stats.totalLh += gamePlayer.lh || 0;
+          stats.totalCi += gamePlayer.ci || 0;
           stats.totalGames += 1;
 
           // Считаем победы (если игра завершена и есть результат)
@@ -128,12 +152,18 @@ const NominationsGrid = ({ tournament }: NominationsGridProps) => {
             stats.roleStats[role] = {
               gamesPlayed: 0,
               gamesWon: 0,
-              totalPoints: 0
+              totalPoints: 0,
+              totalPenaltyPoints: 0,
+              totalLh: 0,
+              totalCi: 0
             };
           }
 
           stats.roleStats[role].gamesPlayed += 1;
           stats.roleStats[role].totalPoints += gamePlayer.bonusPoints;
+          stats.roleStats[role].totalPenaltyPoints += gamePlayer.penaltyPoints;
+          stats.roleStats[role].totalLh += gamePlayer.lh || 0;
+          stats.roleStats[role].totalCi += gamePlayer.ci || 0;
 
           if (game.result) {
             let isWin = false;
@@ -161,116 +191,160 @@ const NominationsGrid = ({ tournament }: NominationsGridProps) => {
   const nominations = useMemo((): Nomination[] => {
     if (calculatePlayerStats.length === 0) {
       return [
-        { title: 'MVP', players: ['Нет данных'], color: '#FFFFFF', icon: Trophy },
-        { title: 'Дон', players: ['Нет данных'], color: '#FFFFFF', icon: Crown },
-        { title: 'Шериф', players: ['Нет данных'], color: '#FFFFFF', icon: Shield },
-        { title: 'Красотка', players: ['Нет данных'], color: '#FF7AF3', icon: Heart },
-        { title: 'Красный', players: ['Нет данных'], color: '#FF4A4A', icon: Skull },
-        { title: 'Черный', players: ['Нет данных'], color: '#FFFFFF', icon: User },
-        { title: 'Маньяк', players: ['Нет данных'], color: '#E4AFFF', icon: Zap },
-        { title: 'Доктор', players: ['Нет данных'], color: '#87CEEB', icon: Stethoscope },
+        { title: 'MVP', players: [], color: '#FFFFFF', icon: Trophy },
+        { title: 'Дон', players: [], color: '#FFFFFF', icon: Crown },
+        { title: 'Шериф', players: [], color: '#FFFFFF', icon: Shield },
+        { title: 'Красотка', players: [], color: '#FF7AF3', icon: Heart },
+        { title: 'Мафия', players: [], color: '#FF4A4A', icon: Target },
+        { title: 'Мирный', players: [], color: '#FFFFFF', icon: User },
+        { title: 'Маньяк', players: [], color: '#E4AFFF', icon: Zap },
+        { title: 'Доктор', players: [], color: '#87CEEB', icon: Stethoscope },
       ];
     }
 
-    // MVP - игрок с наибольшим количеством дополнительных баллов за роли
+    // Функция для расчета комплексного рейтинга игрока
+    const calculatePlayerRating = (player: PlayerStats) => {
+      // Учитываем только: бонусы - штрафы + LH + CI (без базовых очков)
+      return player.totalBonusPoints - player.totalPenaltyPoints + player.totalLh + player.totalCi;
+    };
+
+    // Функция для расчета рейтинга игрока в конкретной роли
+    const calculateRoleRating = (player: PlayerStats, role: string) => {
+      const roleStats = player.roleStats[role];
+      if (!roleStats) return 0;
+      
+      // Для роли учитываем: бонусы за роль - штрафы за роль + LH + CI в этой роли
+      return roleStats.totalPoints - roleStats.totalPenaltyPoints + roleStats.totalLh + roleStats.totalCi;
+    };
+
+    // MVP - игрок с наибольшим комплексным рейтингом
     const mvp = calculatePlayerStats
-      .sort((a, b) => b.totalBonusPoints - a.totalBonusPoints)
+      .sort((a, b) => calculatePlayerRating(b) - calculatePlayerRating(a))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не показываем в MVP
+        totalBonusPoints: p.totalBonusPoints,
+        totalPenaltyPoints: p.totalPenaltyPoints,
+        totalLh: p.totalLh,
+        totalCi: p.totalCi,
+        rating: calculatePlayerRating(p)
+      }));
 
-    // Дон - лучший игрок в роли Дона по дополнительным баллам
+    // Дон - лучший игрок в роли Дона по комплексному рейтингу
     const don = calculatePlayerStats
-      .filter(p => p.roleStats['DON'])
-      .sort((a, b) => {
-        const aDon = a.roleStats['DON'];
-        const bDon = b.roleStats['DON'];
-        // Сортируем по дополнительным баллам за роль Дона
-        return bDon.totalPoints - aDon.totalPoints;
-      })
+      .filter(p => p.roleStats['DON'] && calculateRoleRating(p, 'DON') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'DON') - calculateRoleRating(a, 'DON'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['DON'].totalPoints,
+        totalPenaltyPoints: p.roleStats['DON'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['DON'].totalLh,
+        totalCi: p.roleStats['DON'].totalCi,
+        rating: calculateRoleRating(p, 'DON')
+      }));
 
-    // Шериф - лучший игрок в роли Детектива по дополнительным баллам
+    // Шериф - лучший игрок в роли Детектива по комплексному рейтингу
     const sheriff = calculatePlayerStats
-      .filter(p => p.roleStats['DETECTIVE'])
-      .sort((a, b) => {
-        const aDet = a.roleStats['DETECTIVE'];
-        const bDet = b.roleStats['DETECTIVE'];
-        // Сортируем по дополнительным баллам за роль Детектива
-        return bDet.totalPoints - aDet.totalPoints;
-      })
+      .filter(p => p.roleStats['DETECTIVE'] && calculateRoleRating(p, 'DETECTIVE') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'DETECTIVE') - calculateRoleRating(a, 'DETECTIVE'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['DETECTIVE'].totalPoints,
+        totalPenaltyPoints: p.roleStats['DETECTIVE'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['DETECTIVE'].totalLh,
+        totalCi: p.roleStats['DETECTIVE'].totalCi,
+        rating: calculateRoleRating(p, 'DETECTIVE')
+      }));
 
-    // Красотка - лучший игрок в роли Красотки по дополнительным баллам
+    // Красотка - лучший игрок в роли Красотки по комплексному рейтингу
     const beauty = calculatePlayerStats
-      .filter(p => p.roleStats['BEAUTY'])
-      .sort((a, b) => {
-        const aBeauty = a.roleStats['BEAUTY'];
-        const bBeauty = b.roleStats['BEAUTY'];
-        // Сортируем по дополнительным баллам за роль Красотки
-        return bBeauty.totalPoints - aBeauty.totalPoints;
-      })
+      .filter(p => p.roleStats['BEAUTY'] && calculateRoleRating(p, 'BEAUTY') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'BEAUTY') - calculateRoleRating(a, 'BEAUTY'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['BEAUTY'].totalPoints,
+        totalPenaltyPoints: p.roleStats['BEAUTY'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['BEAUTY'].totalLh,
+        totalCi: p.roleStats['BEAUTY'].totalCi,
+        rating: calculateRoleRating(p, 'BEAUTY')
+      }));
 
-    // Красный - лучший игрок в роли Мафии по дополнительным баллам
+    // Мафия - лучший игрок в роли Мафии по комплексному рейтингу
     const red = calculatePlayerStats
-      .filter(p => p.roleStats['MAFIA'])
-      .sort((a, b) => {
-        const aMafia = a.roleStats['MAFIA'];
-        const bMafia = b.roleStats['MAFIA'];
-        // Сортируем по дополнительным баллам за роль Мафии
-        return bMafia.totalPoints - aMafia.totalPoints;
-      })
+      .filter(p => p.roleStats['MAFIA'] && calculateRoleRating(p, 'MAFIA') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'MAFIA') - calculateRoleRating(a, 'MAFIA'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['MAFIA'].totalPoints,
+        totalPenaltyPoints: p.roleStats['MAFIA'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['MAFIA'].totalLh,
+        totalCi: p.roleStats['MAFIA'].totalCi,
+        rating: calculateRoleRating(p, 'MAFIA')
+      }));
 
-    // Черный - лучший игрок в роли Мирного по дополнительным баллам
+    // Мирный - лучший игрок в роли Мирного по комплексному рейтингу
     const black = calculatePlayerStats
-      .filter(p => p.roleStats['CITIZEN'])
-      .sort((a, b) => {
-        const aCitizen = a.roleStats['CITIZEN'];
-        const bCitizen = b.roleStats['CITIZEN'];
-        // Сортируем по дополнительным баллам за роль Мирного
-        return bCitizen.totalPoints - aCitizen.totalPoints;
-      })
+      .filter(p => p.roleStats['CITIZEN'] && calculateRoleRating(p, 'CITIZEN') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'CITIZEN') - calculateRoleRating(a, 'CITIZEN'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['CITIZEN'].totalPoints,
+        totalPenaltyPoints: p.roleStats['CITIZEN'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['CITIZEN'].totalLh,
+        totalCi: p.roleStats['CITIZEN'].totalCi,
+        rating: calculateRoleRating(p, 'CITIZEN')
+      }));
 
-    // Маньяк - лучший игрок в роли Маньяка по дополнительным баллам
+    // Маньяк - лучший игрок в роли Маньяка по комплексному рейтингу
     const maniac = calculatePlayerStats
-      .filter(p => p.roleStats['MANIAC'])
-      .sort((a, b) => {
-        const aManiac = a.roleStats['MANIAC'];
-        const bManiac = b.roleStats['MANIAC'];
-        // Сортируем по дополнительным баллам за роль Маньяка
-        return bManiac.totalPoints - aManiac.totalPoints;
-      })
+      .filter(p => p.roleStats['MANIAC'] && calculateRoleRating(p, 'MANIAC') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'MANIAC') - calculateRoleRating(a, 'MANIAC'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['MANIAC'].totalPoints,
+        totalPenaltyPoints: p.roleStats['MANIAC'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['MANIAC'].totalLh,
+        totalCi: p.roleStats['MANIAC'].totalCi,
+        rating: calculateRoleRating(p, 'MANIAC')
+      }));
 
-    // Доктор - лучший игрок в роли Доктора по дополнительным баллам
+    // Доктор - лучший игрок в роли Доктора по комплексному рейтингу
     const doctor = calculatePlayerStats
-      .filter(p => p.roleStats['DOCTOR'])
-      .sort((a, b) => {
-        const aDoctor = a.roleStats['DOCTOR'];
-        const bDoctor = b.roleStats['DOCTOR'];
-        // Сортируем по дополнительным баллам за роль Доктора
-        return bDoctor.totalPoints - aDoctor.totalPoints;
-      })
+      .filter(p => p.roleStats['DOCTOR'] && calculateRoleRating(p, 'DOCTOR') > 0)
+      .sort((a, b) => calculateRoleRating(b, 'DOCTOR') - calculateRoleRating(a, 'DOCTOR'))
       .slice(0, 3)
-      .map(p => p.nickname);
+      .map(p => ({
+        nickname: p.nickname,
+        totalPoints: 0, // Базовые баллы не учитываются в ролевых номинациях
+        totalBonusPoints: p.roleStats['DOCTOR'].totalPoints,
+        totalPenaltyPoints: p.roleStats['DOCTOR'].totalPenaltyPoints, // Штрафы за роль
+        totalLh: p.roleStats['DOCTOR'].totalLh,
+        totalCi: p.roleStats['DOCTOR'].totalCi,
+        rating: calculateRoleRating(p, 'DOCTOR')
+      }));
 
     return [
-      { title: 'MVP', players: mvp.length > 0 ? mvp : ['Нет данных'], color: '#FFFFFF', icon: Trophy },
-      { title: 'Дон', players: don.length > 0 ? don : ['Нет данных'], color: '#FFFFFF', icon: Crown },
-      { title: 'Шериф', players: sheriff.length > 0 ? sheriff : ['Нет данных'], color: '#FFFFFF', icon: Shield },
-      { title: 'Красотка', players: beauty.length > 0 ? beauty : ['Нет данных'], color: '#FF7AF3', icon: Heart },
-      { title: 'Красный', players: red.length > 0 ? red : ['Нет данных'], color: '#FF4A4A', icon: Skull },
-      { title: 'Черный', players: black.length > 0 ? black : ['Нет данных'], color: '#FFFFFF', icon: User },
-      { title: 'Маньяк', players: maniac.length > 0 ? maniac : ['Нет данных'], color: '#E4AFFF', icon: Zap },
-      { title: 'Доктор', players: doctor.length > 0 ? doctor : ['Нет данных'], color: '#87CEEB', icon: Stethoscope },
+      { title: 'MVP', players: mvp, color: '#FFFFFF', icon: Trophy },
+      { title: 'Дон', players: don, color: '#FFFFFF', icon: Crown },
+      { title: 'Шериф', players: sheriff, color: '#FFFFFF', icon: Shield },
+      { title: 'Красотка', players: beauty, color: '#FF7AF3', icon: Heart },
+        { title: 'Мафия', players: red, color: '#FF4A4A', icon: Target },
+        { title: 'Мирный', players: black, color: '#FFFFFF', icon: User },
+      { title: 'Маньяк', players: maniac, color: '#E4AFFF', icon: Zap },
+      { title: 'Доктор', players: doctor, color: '#87CEEB', icon: Stethoscope },
     ];
   }, [calculatePlayerStats]);
 
@@ -291,7 +365,7 @@ const NominationsGrid = ({ tournament }: NominationsGridProps) => {
       <div className="mb-4">
         <h2 className="text-xl font-bold text-white mb-2">Номинации турнира</h2>
         <p className="text-gray-400 text-sm">
-          Номинации рассчитываются на основе дополнительных баллов за роли за весь турнир
+          Номинации рассчитываются на основе комплексного рейтинга: бонусы - штрафы + LH + CI за весь турнир
         </p>
       </div>
       

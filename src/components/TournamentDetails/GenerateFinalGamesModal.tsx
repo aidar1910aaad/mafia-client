@@ -47,11 +47,7 @@ export default function GenerateFinalGamesModal({
         totalGames: formData.totalGames
       };
 
-      console.log('Генерируем финальные игры с параметрами:', requestData);
-      
       const generatedGames = await gamesAPI.generateFinalGames(requestData);
-      
-      console.log('Сгенерированы финальные игры:', generatedGames);
       
       alert(`Успешно сгенерировано ${generatedGames.length} финальных игр!`);
       

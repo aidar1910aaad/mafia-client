@@ -60,8 +60,8 @@ const PlayerFilters: React.FC<PlayerFiltersProps> = ({
               className="flex-1 px-3 py-2 bg-[#1D1D1D] border border-[#404040] rounded-lg text-white focus:outline-none focus:border-[#8469EF] text-sm sm:text-base"
             >
               <option value="nickname">По имени</option>
-              <option value="eloRating">По ELO рейтингу</option>
-              <option value="totalPoints">По баллам</option>
+              <option value="eloRating">По Баллам</option>
+              <option value="tournamentsParticipated">По турнирам</option>
             </select>
             <button
               onClick={() => onSortOrderChange(sortOrder === 'asc' ? 'desc' : 'asc')}
