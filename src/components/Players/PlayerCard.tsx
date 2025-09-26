@@ -95,10 +95,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
               )}
             </div>
             
-            <div className="text-[#C7C7C7] text-sm flex items-center gap-1">
-              <User className="w-3 h-3" />
-              <span>{player.email}</span>
-            </div>
           </div>
 
           {/* Key Stats */}
@@ -159,10 +155,6 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, rank }) => {
               </div>
             </div>
             
-            <div className="text-[#C7C7C7] text-xs flex items-center gap-1 mb-3">
-              <User className="w-3 h-3" />
-              <span className="truncate">{player.email}</span>
-            </div>
 
             {/* Mobile Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-3">

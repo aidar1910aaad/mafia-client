@@ -116,10 +116,7 @@ export default function ProfilePage() {
                                     {user?.nickname || 'Игровой Никнейм'}
                                 </h1>
                                 
-                                {/* Email */}
-                                <p className="text-white text-lg mb-1">
-                                    {user?.email || 'Email не указан'}
-                                </p>
+                               
                                 
                                 {/* Роль */}
                                 <p className="text-white text-base">
@@ -165,8 +162,13 @@ export default function ProfilePage() {
                             </div>
 
                             <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
-                                <h3 className="text-white font-semibold mb-2">Рейтинг ELO</h3>
+                                <h3 className="text-white font-semibold mb-2">Баллы</h3>
                                 <p className="text-white text-lg">{formatNumber(user?.eloRating)}</p>
+                            </div>
+
+                            <div className="bg-[#2A2A2A]/80 backdrop-blur-sm border border-[#404040]/50 rounded-xl p-4">
+                                <h3 className="text-white font-semibold mb-2">Турниров сыграно</h3>
+                                <p className="text-white text-lg">{formatNumber(user?.tournamentsParticipated || 0)}</p>
                             </div>
                         </div>
                     </div>

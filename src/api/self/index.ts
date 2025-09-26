@@ -13,7 +13,7 @@ export interface UserProfile {
     id: number;
     email: string;
     nickname: string;
-    avatar: string | null;
+    avatar: string;
     role: string;
     confirmed: boolean;
     totalGames: number;
@@ -21,6 +21,7 @@ export interface UserProfile {
     totalPoints: number;
     eloRating: number;
     totalBonusPoints: number;
+    tournamentsParticipated: number;
     roleStats: RoleStat[];
     createdAt: string;
     updatedAt: string;

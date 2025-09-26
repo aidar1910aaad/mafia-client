@@ -37,7 +37,6 @@ export default function ProfileInfo({ user }: ProfileInfoProps) {
     return (
         <div className="flex-1">
             <h2 className="text-white text-2xl font-bold mb-2">{user.nickname || 'Пользователь'}</h2>
-            <p className="text-[#A1A1A1] mb-3">{user.email}</p>
             
             <div className="flex items-center gap-2 mb-4">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(user.role)}`}>
