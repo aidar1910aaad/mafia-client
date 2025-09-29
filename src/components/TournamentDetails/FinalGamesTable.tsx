@@ -224,6 +224,128 @@ const PlayerRow = React.memo(({
   );
 });
 
+// Компонент игры
+const GameCard = React.memo(({ 
+  game, 
+  gameData, 
+  isReferee, 
+  onUpdateGame,
+  onSaveGame,
+  isSaving 
+}: {
+  game: Game;
+  gameData: GameData;
+  isReferee: boolean;
+  onUpdateGame: (gameId: number, field: keyof GameData, value: any) => void;
+  onSaveGame: (gameId: number) => void;
+  isSaving: boolean;
+}) => {
+  const handleResultChange = (result: GameResult | '') => {
+    onUpdateGame(game.id, 'result', result || null);
+  };
+
+  const handlePlayerUpdate = (playerId: number, field: keyof PlayerResult, value: any) => {
+    const updatedPlayers = gameData.players.map(player => 
+      player.playerId === playerId ? { ...player, [field]: value } : player
+    );
+    
+    onUpdateGame(game.id, 'players', updatedPlayers);
+  };
+
+  const resultData = gameData.result ? RESULTS[gameData.result] : null;
+
+  return (
+    <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <h5 className="text-md font-medium text-white flex items-center gap-2">
+          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          </svg>
+          {game.name}
+        </h5>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-gray-400">{game.players?.length || 0} игроков</div>
+          
+          {isReferee ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-400">Результат:</span>
+              <select
+                value={gameData.result || ''}
+                onChange={(e) => handleResultChange(e.target.value as GameResult)}
+                className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+              >
+                <option value="">Не определен</option>
+                <option value={GameResult.MAFIA_WIN}>Победа мафии</option>
+                <option value={GameResult.CITIZEN_WIN}>Победа горожан</option>
+                <option value={GameResult.MANIAC_WIN}>Победа маньяка</option>
+                <option value={GameResult.DRAW}>Ничья</option>
+              </select>
+            </div>
+          ) : (
+            <div className={`text-sm font-medium ${resultData?.color || 'text-gray-400'}`}>
+              {resultData?.name || 'Не определен'}
+            </div>
+          )}
+          
+          {isReferee && (
+            <button
+              onClick={() => onSaveGame(game.id)}
+              disabled={!gameData.hasChanges || isSaving}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                gameData.hasChanges && !isSaving
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {isSaving ? 'Сохранение...' : 'Сохранить'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="w-full">
+        <table className="w-full text-xs text-white">
+          <thead className="text-gray-400">
+            <tr className="border-b border-gray-600">
+              <th className="px-1 py-1 text-center w-8">#</th>
+              <th className="px-1 py-1 text-left min-w-0">Игрок</th>
+              <th className="px-1 py-1 text-center w-20">Роль</th>
+              <th className="px-1 py-1 text-center w-12">Σ</th>
+              <th className="px-1 py-1 text-center w-12">Σ+</th>
+              <th className="px-1 py-1 text-center w-12">-</th>
+              <th className="px-1 py-1 text-center w-12">ЛХ</th>
+              <th className="px-1 py-1 text-center w-12">Ci</th>
+            </tr>
+          </thead>
+          <tbody>
+            {game.players?.sort((a, b) => (a.seatIndex || 0) - (b.seatIndex || 0)).map((player) => {
+              const result = gameData.players.find(p => p.playerId === player.player?.id) || {
+                playerId: player.player?.id || 0,
+                role: player.role || 'CITIZEN',
+                points: player.points || 0,
+                bonusPoints: player.bonusPoints || 0,
+                penaltyPoints: player.penaltyPoints || 0,
+                lh: 0, // Поле не существует в GamePlayer, используем 0
+                ci: 0, // Поле не существует в GamePlayer, используем 0
+              };
+
+              return (
+                <PlayerRow
+                  key={`${game.id}-${player.player?.id}`}
+                  player={player}
+                  result={result}
+                  isReferee={isReferee}
+                  onUpdate={(field, value) => handlePlayerUpdate(player.player?.id || 0, field, value)}
+                />
+              );
+            }) || []}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+});
+
 const FinalGamesTable = ({ tournament, currentUser }: FinalGamesTableProps) => {
   const [games, setGames] = useState<Game[]>([]);
   const [gameData, setGameData] = useState<{ [gameId: number]: GameData }>({});
@@ -305,7 +427,6 @@ const FinalGamesTable = ({ tournament, currentUser }: FinalGamesTableProps) => {
 
   // Обновляем данные игры
   const handleUpdateGame = useCallback((gameId: number, field: keyof GameData, value: any) => {
-    console.log(`📝 Изменение в финальной игре ${gameId}:`, field);
     setGameData(prev => ({
       ...prev,
       [gameId]: {
@@ -423,141 +544,19 @@ const FinalGamesTable = ({ tournament, currentUser }: FinalGamesTableProps) => {
     );
   }
 
-  // Компонент для отображения финальной игры
-  const FinalGameCard = React.memo(({ 
-    game, 
-    gameData, 
-    isReferee, 
-    onUpdateGame,
-    onSaveGame,
-    isSaving 
-  }: {
-    game: Game;
-    gameData: GameData;
-    isReferee: boolean;
-    onUpdateGame: (gameId: number, field: keyof GameData, value: any) => void;
-    onSaveGame: (gameId: number) => void;
-    isSaving: boolean;
-  }) => {
-    const handleResultChange = (result: GameResult | '') => {
-      onUpdateGame(game.id, 'result', result || null);
-    };
-
-    const handlePlayerUpdate = (playerId: number, field: keyof PlayerResult, value: any) => {
-      const updatedPlayers = gameData.players.map(player => 
-        player.playerId === playerId ? { ...player, [field]: value } : player
-      );
-      
-      onUpdateGame(game.id, 'players', updatedPlayers);
-    };
-
-    const resultData = gameData.result ? RESULTS[gameData.result] : null;
-
-    return (
-      <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h5 className="text-md font-medium text-white flex items-center gap-2">
-            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-            {game.name}
-          </h5>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-400">{game.players?.length || 0} игроков</div>
-            
-            {isReferee ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Результат:</span>
-                <select
-                  value={gameData.result || ''}
-                  onChange={(e) => handleResultChange(e.target.value as GameResult)}
-                  className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-white text-sm"
-                >
-                  <option value="">Не определен</option>
-                  <option value={GameResult.MAFIA_WIN}>Победа мафии</option>
-                  <option value={GameResult.CITIZEN_WIN}>Победа горожан</option>
-                  <option value={GameResult.MANIAC_WIN}>Победа маньяка</option>
-                  <option value={GameResult.DRAW}>Ничья</option>
-                </select>
-              </div>
-            ) : (
-              <div className={`text-sm font-medium ${resultData?.color || 'text-gray-400'}`}>
-                {resultData?.name || 'Не определен'}
-              </div>
-            )}
-            
-            {isReferee && (
-              <button
-                onClick={() => onSaveGame(game.id)}
-                disabled={!gameData.hasChanges || isSaving}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  gameData.hasChanges && !isSaving
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {isSaving ? 'Сохранение...' : 'Сохранить'}
-              </button>
-            )}
-          </div>
-        </div>
-      
-        <div className="w-full">
-          <table className="w-full text-xs text-white">
-            <thead className="text-gray-400">
-              <tr className="border-b border-gray-600">
-                <th className="px-1 py-1 text-center w-8">#</th>
-                <th className="px-1 py-1 text-left min-w-0">Игрок</th>
-                <th className="px-1 py-1 text-center w-20">Роль</th>
-                <th className="px-1 py-1 text-center w-12">Σ</th>
-                <th className="px-1 py-1 text-center w-12">Σ+</th>
-                <th className="px-1 py-1 text-center w-12">-</th>
-                <th className="px-1 py-1 text-center w-12">ЛХ</th>
-                <th className="px-1 py-1 text-center w-12">Ci</th>
-              </tr>
-            </thead>
-            <tbody>
-              {game.players?.sort((a, b) => (a.seatIndex || 0) - (b.seatIndex || 0)).map((player) => {
-                const result = gameData.players.find(p => p.playerId === player.player?.id) || {
-                  playerId: player.player?.id || 0,
-                  role: player.role || 'CITIZEN',
-                  points: player.points || 0,
-                  bonusPoints: player.bonusPoints || 0,
-                  penaltyPoints: player.penaltyPoints || 0,
-                  lh: 0, // Поле не существует в GamePlayer, используем 0
-                  ci: 0, // Поле не существует в GamePlayer, используем 0
-                };
-
-                return (
-                  <PlayerRow
-                    key={`${game.id}-${player.player?.id}`}
-                    player={player}
-                    result={result}
-                    isReferee={isReferee}
-                    onUpdate={(field, value) => handlePlayerUpdate(player.player?.id || 0, field, value)}
-                  />
-                );
-              }) || []}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  });
-
   return (
-    <div className="bg-[#111111] rounded-2xl p-4 md:p-6 border border-gray-800">
-      <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+    <div className="bg-[#111111] rounded-2xl p-3 md:p-4 border border-gray-800">
+      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
         <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
         </svg>
         Финальные игры турнира
       </h3>
       
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {games.map((game) => (
-            <FinalGameCard
+            <GameCard
               key={game.id}
               game={game}
               gameData={gameData[game.id]}

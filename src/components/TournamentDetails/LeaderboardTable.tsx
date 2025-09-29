@@ -88,10 +88,10 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
       });
     });
 
-    // Сортируем по общим очкам
+    // Сортируем по общему баллу (Σ + Σ+ - Σ- + ЛХ + Ci)
     return Array.from(statsMap.values()).sort((a, b) => 
-      (b.totalPoints + b.totalBonusPoints - b.totalPenaltyPoints) - 
-      (a.totalPoints + a.totalBonusPoints - a.totalPenaltyPoints)
+      (b.totalPoints + b.totalBonusPoints - b.totalPenaltyPoints + b.totalLh + b.totalCi) - 
+      (a.totalPoints + a.totalBonusPoints - a.totalPenaltyPoints + a.totalLh + a.totalCi)
     );
   }, [tournament.games]);
 
@@ -117,7 +117,7 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
       <table className="w-full text-sm text-white border-collapse">
         <thead className="bg-[#1E1E1E]">
           <tr>
-            {["#", "Игрок", "Σ", "Σ+", "Σ-", "ЛХ", "Ci", "Игр", "Мафия", "Дон", "Шериф", "Доктор", "Маньяк", "Красотка", "Мирный"].map((col, i) => (
+            {["#", "Игрок", "Общий балл", "Σ", "Σ+", "Σ-", "ЛХ", "Ci", "Игр", "Мафия", "Дон", "Шериф", "Доктор", "Маньяк", "Красотка", "Мирный"].map((col, i) => (
               <th key={i} className="border border-gray-700 px-2 py-2 whitespace-nowrap font-normal text-xs">{col}</th>
             ))}
           </tr>
@@ -129,6 +129,9 @@ const LeaderboardTable = ({ tournament }: LeaderboardTableProps) => {
                 <td className="border-r border-gray-700 px-2 py-2 font-medium">{i + 1}</td>
                 <td className="border-r border-gray-700 px-2 py-2 text-left whitespace-nowrap font-medium">
                   {player.nickname}
+                </td>
+                <td className="border-r border-gray-700 px-2 py-2 font-bold text-white">
+                  {Number((player.totalPoints + player.totalBonusPoints - player.totalPenaltyPoints + player.totalLh + player.totalCi).toFixed(2))}
                 </td>
                 <td className="border-r border-gray-700 px-2 py-2 font-bold text-yellow-400">
                   {Number(player.totalPoints.toFixed(2))}
