@@ -3,10 +3,10 @@ import Link from 'next/link';
 export default function Footer() {
     const footerLinks = [
         { text: 'Приказы', href: '/orders' },
-        { text: 'ELO баллы', href: '/elo' },
+        { text: 'Рейтинговые баллы', href: '/elo' },
         { text: 'Поддержка', href: '/support' },
         { text: 'Судейский корпус', href: '/referees' },
-        { text: 'Регламент', href: '/rules' },
+        { text: 'Регламент', href: '/rules.pdf' },
         { text: 'Пользовательское соглашение', href: '/terms' }
     ];
 
@@ -27,13 +27,25 @@ export default function Footer() {
                     <div className="flex flex-col ml-[40px] items-start justify-center">
                         <div className="flex gap-x-2 mb-2">
                             {footerLinks.map((link, i) => (
-                                <Link
-                                    key={i}
-                                    href={link.href}
-                                    className="text-[#757575] mr-[20px] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm"
-                                >
-                                    {link.text}
-                                </Link>
+                                link.href === '/rules.pdf' ? (
+                                    <a
+                                        key={i}
+                                        href={link.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[#757575] mr-[20px] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm"
+                                    >
+                                        {link.text}
+                                    </a>
+                                ) : (
+                                    <Link
+                                        key={i}
+                                        href={link.href}
+                                        className="text-[#757575] mr-[20px] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm"
+                                    >
+                                        {link.text}
+                                    </Link>
+                                )
                             ))}
                         </div>
                         <div className="text-[#757575] text-sm">
@@ -55,13 +67,25 @@ export default function Footer() {
                     {/* Ссылки в две колонки */}
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                         {footerLinks.map((link, i) => (
-                            <Link
-                                key={i}
-                                href={link.href}
-                                className="text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-1"
-                            >
-                                {link.text}
-                            </Link>
+                            link.href === '/rules.pdf' ? (
+                                <a
+                                    key={i}
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-1"
+                                >
+                                    {link.text}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={i}
+                                    href={link.href}
+                                    className="text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-1"
+                                >
+                                    {link.text}
+                                </Link>
+                            )
                         ))}
                     </div>
 
@@ -81,13 +105,25 @@ export default function Footer() {
                     {/* Ссылки в одну колонку */}
                     <div className="space-y-2">
                         {footerLinks.map((link, i) => (
-                            <Link
-                                key={i}
-                                href={link.href}
-                                className="block text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-2"
-                            >
-                                {link.text}
-                            </Link>
+                            link.href === '/rules.pdf' ? (
+                                <a
+                                    key={i}
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-2"
+                                >
+                                    {link.text}
+                                </a>
+                            ) : (
+                                <Link
+                                    key={i}
+                                    href={link.href}
+                                    className="block text-[#757575] hover:text-[#A1A1A1] cursor-pointer transition-colors text-sm text-center py-2"
+                                >
+                                    {link.text}
+                                </Link>
+                            )
                         ))}
                     </div>
 

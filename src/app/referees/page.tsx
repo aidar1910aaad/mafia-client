@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { User, Award, Shield, Star } from 'lucide-react';
 
 export default function RefereesPage() {
@@ -53,54 +54,53 @@ export default function RefereesPage() {
             <div className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Star className="w-6 h-6 text-green-400" />
-                <h2 className="text-white text-xl font-semibold">Лучшие судьи</h2>
+                <h2 className="text-white text-xl font-semibold">Судьи</h2>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
+                <Link href="/players/71" className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg hover:bg-[#333333] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-white font-medium">Алексей Петров</h4>
-                      <p className="text-gray-400 text-sm">Главный судья</p>
+                      <h4 className="text-white font-medium">Берлускони</h4>
+                      <p className="text-gray-400 text-sm">Судья</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">4.9/5</div>
-                    <div className="text-gray-400 text-sm">156 игр</div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
+                </Link>
+                <Link href="/players/2" className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg hover:bg-[#333333] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-white font-medium">Мария Сидорова</h4>
-                      <p className="text-gray-400 text-sm">Опытный судья</p>
+                      <h4 className="text-white font-medium">Герцог</h4>
+                      <p className="text-gray-400 text-sm">Судья</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">4.8/5</div>
-                    <div className="text-gray-400 text-sm">89 игр</div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg">
+                </Link>
+                <Link href="/players/13" className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg hover:bg-[#333333] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="text-white font-medium">Дмитрий Козлов</h4>
-                      <p className="text-gray-400 text-sm">Начинающий судья</p>
+                      <h4 className="text-white font-medium">Drummer</h4>
+                      <p className="text-gray-400 text-sm">Судья</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-medium">4.7/5</div>
-                    <div className="text-gray-400 text-sm">45 игр</div>
+                </Link>
+                <Link href="/players/8" className="flex items-center justify-between p-3 bg-[#2A2A2A] rounded-lg hover:bg-[#333333] transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-medium">Вояджер</h4>
+                      <p className="text-gray-400 text-sm">Судья</p>
+                    </div>
                   </div>
-                </div>
+                </Link>
               </div>
             </div>
 

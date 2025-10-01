@@ -19,25 +19,14 @@ export default function SupportPage() {
                 Напишите нам на email для получения технической поддержки.
               </p>
               <a 
-                href="mailto:support@mafia-game.com" 
+                href="mailto:filipp_9898@mail.ru" 
                 className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                support@mafia-game.com
+                filipp_9898@mail.ru
               </a>
             </div>
 
-            <div className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <MessageCircle className="w-6 h-6 text-green-400" />
-                <h2 className="text-white text-xl font-semibold">Чат поддержки</h2>
-              </div>
-              <p className="text-gray-400 mb-4">
-                Получите мгновенную помощь через онлайн чат.
-              </p>
-              <button className="text-green-400 hover:text-green-300 transition-colors">
-                Открыть чат
-              </button>
-            </div>
+          
 
             <div className="bg-[#1D1D1D] border border-[#404040]/30 rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -48,10 +37,10 @@ export default function SupportPage() {
                 Позвоните нам для получения консультации.
               </p>
               <a 
-                href="tel:+7-800-555-0123" 
+                href="tel:+79687622211" 
                 className="text-purple-400 hover:text-purple-300 transition-colors"
               >
-                +7 (800) 555-01-23
+                +79687622211
               </a>
             </div>
 
